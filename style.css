@@ -1404,11 +1404,14 @@ body {
     display: flex;
     flex-direction: column;
     background: white;
+    overflow: hidden;
+    height: 100%;
 }
 
 .sidebar-header {
     padding: 16px 20px;
     border-bottom: 1px solid #e8f5ee;
+    flex-shrink: 0;
 }
 
 .sidebar-header h3 {
@@ -1425,6 +1428,7 @@ body {
 .sidebar-search {
     padding: 12px 16px;
     border-bottom: 1px solid #e8f5ee;
+    flex-shrink: 0;
 }
 
 .sidebar-search input {
@@ -1444,6 +1448,7 @@ body {
 .users-list {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
 .loading-msg {
@@ -1505,21 +1510,6 @@ body {
     border-bottom: 1px solid #e8f5ee;
     flex-shrink: 0;
 }
-#public-section {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-#inbox-section {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
 
 .chat-tab {
     padding: 12px;
@@ -1544,6 +1534,14 @@ body {
 /* ========== PUBLIC CHAT ========== */
 
 #public-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#inbox-section {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -1825,20 +1823,8 @@ body {
 .send-btn:hover { background: #157a4e; }
 
 @media (max-width: 768px) {
-    .chat-page {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    height: calc(100vh - 60px);
-}
-
-.chat-sidebar {
-    border-right: 1px solid #e8f5ee;
-    display: flex;
-    flex-direction: column;
-    background: white;
-    overflow: hidden;
-    height: 100%;
-}
+    .chat-page { grid-template-columns: 1fr; }
+    .chat-sidebar { height: auto; }
     .chat-window { display: none; }
     .chat-window.mobile-open {
         display: flex;
