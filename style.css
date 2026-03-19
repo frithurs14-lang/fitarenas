@@ -1603,10 +1603,14 @@ body {
     gap: 8px;
     border-top: 1px solid #e8f5ee;
     background: white;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
 }
 
 .public-input-area input {
     flex: 1;
+    min-width: 0;
     padding: 9px 14px;
     border: 1.5px solid #e0e0e0;
     border-radius: 20px;
@@ -1615,7 +1619,10 @@ body {
     transition: border-color 0.2s;
 }
 
-.public-input-area input:focus { border-color: #1a8a5a; }
+.public-input-area input:focus {
+    border-color: #1a8a5a;
+}
+
 
 /* ========== CHAT WINDOW ========== */
 
@@ -1754,10 +1761,14 @@ body {
     display: flex;
     gap: 10px;
     border-top: 1px solid #e8f5ee;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
 }
 
 .message-input-area input {
     flex: 1;
+    min-width: 0;
     padding: 10px 16px;
     border: 1.5px solid #e0e0e0;
     border-radius: 20px;
@@ -1766,7 +1777,9 @@ body {
     transition: border-color 0.2s;
 }
 
-.message-input-area input:focus { border-color: #1a8a5a; }
+.message-input-area input:focus {
+    border-color: #1a8a5a;
+}
 
 .send-btn {
     width: 42px;
