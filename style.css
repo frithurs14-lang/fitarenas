@@ -1505,6 +1505,21 @@ body {
     border-bottom: 1px solid #e8f5ee;
     flex-shrink: 0;
 }
+#public-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#inbox-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
 
 .chat-tab {
     padding: 12px;
@@ -1810,7 +1825,20 @@ body {
 .send-btn:hover { background: #157a4e; }
 
 @media (max-width: 768px) {
-    .chat-page { grid-template-columns: 1fr; }
+    .chat-page {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100vh - 60px);
+}
+
+.chat-sidebar {
+    border-right: 1px solid #e8f5ee;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    overflow: hidden;
+    height: 100%;
+}
     .chat-window { display: none; }
     .chat-window.mobile-open {
         display: flex;
