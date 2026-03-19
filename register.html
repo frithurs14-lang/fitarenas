@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Register</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-body">
+
+    <div class="auth-container">
+
+        <div class="auth-logo">
+            <h1>🏃 FitLife</h1>
+            <p>সুস্থ থাকো, সংযুক্ত থাকো</p>
+        </div>
+
+        <div class="auth-card">
+            <h2>নতুন Account</h2>
+
+            <div id="error-msg" class="error-msg hidden"></div>
+            <div id="success-msg" class="success-msg hidden"></div>
+
+            <div class="form-group">
+                <label>পুরো নাম</label>
+                <input type="text" id="fullname" placeholder="তোমার নাম দাও" />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="তোমার email দাও" />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="কমপক্ষে ৬ অক্ষর" />
+            </div>
+
+            <div class="form-group">
+                <label>Password আবার দাও</label>
+                <input type="password" id="confirm-password" placeholder="একই password দাও" />
+            </div>
+
+            <button class="btn-primary" onclick="handleRegister()">Register করো</button>
+
+            <div class="auth-links">
+                <a href="index.html">আগে থেকে account আছে? Login করো</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+
+</body>
+</html>

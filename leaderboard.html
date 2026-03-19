@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Leaderboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">🏃 FitLife</div>
+        <ul class="nav-links">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="activity.html">Activity</a></li>
+            <li><a href="map.html">Live Map</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="leaderboard.html" class="active">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="user-name">...</span>
+            <button onclick="handleLogout()" class="btn-logout">Logout</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <div class="leaderboard-page">
+
+        <!-- HEADER -->
+        <div class="leaderboard-header">
+            <h2>🏆 Leaderboard</h2>
+            <p>কে কত km করলো দেখো</p>
+        </div>
+
+        <!-- PERIOD TABS -->
+        <div class="period-tabs">
+            <button class="period-tab active" onclick="changePeriod('weekly')">
+                📅 Weekly
+            </button>
+            <button class="period-tab" onclick="changePeriod('monthly')">
+                🗓️ Monthly
+            </button>
+            <button class="period-tab" onclick="changePeriod('yearly')">
+                📆 Yearly
+            </button>
+            <button class="period-tab" onclick="changePeriod('alltime')">
+                🏅 All Time
+            </button>
+        </div>
+
+        <!-- ACTIVITY FILTER -->
+        <div class="activity-filter">
+            <button class="filter-btn active" onclick="changeActivity('all')">
+                🏃 সব
+            </button>
+            <button class="filter-btn" onclick="changeActivity('walking')">
+                🚶 Walking
+            </button>
+            <button class="filter-btn" onclick="changeActivity('jogging')">
+                🏃 Jogging
+            </button>
+            <button class="filter-btn" onclick="changeActivity('running')">
+                🏃‍♂️ Running
+            </button>
+            <button class="filter-btn" onclick="changeActivity('cycling')">
+                🚴 Cycling
+            </button>
+        </div>
+
+        <!-- TOP 3 -->
+        <div class="top-three" id="top-three"></div>
+
+        <!-- FULL LIST -->
+        <div class="leaderboard-list" id="leaderboard-list">
+            <div class="loading-msg">লোড হচ্ছে...</div>
+        </div>
+
+        <!-- MY RANK -->
+        <div class="my-rank" id="my-rank"></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/leaderboard.js"></script>
+
+</body>
+</html>

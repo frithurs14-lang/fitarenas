@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Home</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-logo">🏃 FitLife</div>
+        <ul class="nav-links">
+            <li><a href="home.html" class="active">Home</a></li>
+            <li><a href="activity.html">Activity</a></li>
+            <li><a href="map.html">Live Map</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="user-name">...</span>
+            <button onclick="handleLogout()" class="btn-logout">Logout</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>সুস্থ থাকো<br>একসাথে চলো</h1>
+            <p>হাঁটো, দৌড়াও, সাইকেল চালাও — কাছের মানুষদের সাথে সংযুক্ত থাকো</p>
+            <div class="hero-buttons">
+                <a href="activity.html" class="btn-primary">Activity শুরু করো</a>
+                <a href="map.html" class="btn-secondary">Live Map দেখো</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span id="nearby-count">0</span>
+                    <p>Active</p>
+                </div>
+                <div class="stat">
+                    <span id="total-km">0</span>
+                    <p>Total km</p>
+                </div>
+                <div class="stat">
+                    <span id="streak-days">0</span>
+                    <p>Day's streak</p>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">🏃‍♂️</div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="features">
+        <h2>FitLife দিয়ে যা করতে পারবে</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🗺️</div>
+                <h3>Live Map</h3>
+                <p>কাছের active users দেখো, location share করো, একসাথে চলো</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏅</div>
+                <h3>Badge & Level</h3>
+                <p>km বাড়লে badge পাবে, level up হবে, leaderboard এ উঠবে</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Chat</h3>
+                <p>কাছের users দের সাথে chat করো, workout partner খোঁজো</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Activity Track</h3>
+                <p>হাঁটা, দৌড়, সাইকেল — সব track হবে, progress দেখো</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h3>Leaderboard</h3>
+                <p>Weekly, monthly, yearly — কে কত km করলো দেখো</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👤</div>
+                <h3>Profile</h3>
+                <p>নিজের stats, badges, visitors সব এক জায়গায়</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACTIVITY TYPES -->
+    <section class="activity-types">
+        <h2>কোন activity করতে চাও?</h2>
+        <div class="activity-grid">
+            <a href="activity.html?type=walking" class="activity-card">
+                <span>🚶</span>
+                <h3>Walking</h3>
+                <p>হাঁটা শুরু করো</p>
+            </a>
+            <a href="activity.html?type=jogging" class="activity-card">
+                <span>🏃</span>
+                <h3>Jogging</h3>
+                <p>হালকা দৌড়</p>
+            </a>
+            <a href="activity.html?type=running" class="activity-card">
+                <span>🏃‍♂️</span>
+                <h3>Running</h3>
+                <p>পুরোদমে দৌড়</p>
+            </a>
+            <a href="activity.html?type=cycling" class="activity-card">
+                <span>🚴</span>
+                <h3>Cycling</h3>
+                <p>সাইকেল চালাও</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>🏃 FitLife — সুস্থ থাকো, সংযুক্ত থাকো</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/home.js"></script>
+
+</body>
+</html>

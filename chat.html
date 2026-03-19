@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Chat</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">🏃 FitLife</div>
+        <ul class="nav-links">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="activity.html">Activity</a></li>
+            <li><a href="map.html">Live Map</a></li>
+            <li><a href="chat.html" class="active">Chat</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="user-name">...</span>
+            <button onclick="handleLogout()" class="btn-logout">Logout</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <div class="chat-page">
+
+        <!-- SIDEBAR -->
+        <div class="chat-sidebar" id="chat-sidebar">
+
+            <!-- TABS -->
+            <div class="chat-tabs">
+                <button class="chat-tab active" id="tab-public" 
+                    onclick="switchTab('public')">
+                    🌍 Public
+                </button>
+                <button class="chat-tab" id="tab-inbox" 
+                    onclick="switchTab('inbox')">
+                    💬 Inbox
+                </button>
+            </div>
+
+            <!-- PUBLIC TAB -->
+            <div id="public-section">
+                <div class="sidebar-header">
+                    <h3>🌍 Public Chat</h3>
+                    <small>সবাই দেখতে পাবে</small>
+                </div>
+                <div class="public-messages" id="public-messages">
+                    <div class="loading-msg">লোড হচ্ছে...</div>
+                </div>
+                <div class="public-input-area">
+                    <input type="text" id="public-input" 
+                        placeholder="সবার জন্য message লিখো..."
+                        onkeypress="handlePublicKeyPress(event)"/>
+                    <button class="send-btn" onclick="sendPublicMessage()">➤</button>
+                </div>
+            </div>
+
+            <!-- INBOX TAB -->
+            <div id="inbox-section" class="hidden">
+                <div class="sidebar-header">
+                    <h3>💬 Inbox</h3>
+                </div>
+                <div class="sidebar-search">
+                    <input type="text" id="search-input"
+                        placeholder="নাম দিয়ে খোঁজো..."
+                        oninput="searchUsers()"/>
+                </div>
+                <div class="users-list" id="users-list">
+                    <div class="loading-msg">লোড হচ্ছে...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CHAT WINDOW (Inbox only) -->
+        <div class="chat-window" id="chat-window">
+            <div class="no-chat" id="no-chat">
+                <div class="no-chat-icon">💬</div>
+                <h3>কারো সাথে chat শুরু করো</h3>
+                <p>Inbox থেকে কাউকে select করো</p>
+            </div>
+
+            <div class="chat-area hidden" id="chat-area">
+                <div class="chat-header">
+                    <button class="back-btn" onclick="backToList()">←</button>
+                    <div class="chat-user-avatar" id="chat-avatar">?</div>
+                    <div class="chat-user-info">
+                        <h4 id="chat-username">...</h4>
+                        <span id="chat-status">active</span>
+                    </div>
+                    <a id="view-profile-btn" href="#" class="view-profile">
+                        👤 Profile
+                    </a>
+                </div>
+                <div class="messages-container" id="messages-container"></div>
+                <div class="message-input-area">
+                    <input type="text" id="message-input"
+                        placeholder="Message লিখো..."
+                        onkeypress="handleKeyPress(event)"/>
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/chat.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Live Map</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">🏃 FitLife</div>
+        <ul class="nav-links">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="activity.html">Activity</a></li>
+            <li><a href="map.html" class="active">Live Map</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="user-name">...</span>
+            <button onclick="handleLogout()" class="btn-logout">Logout</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <div class="popup-overlay hidden" id="location-popup">
+        <div class="popup-box">
+            <div class="popup-icon">📍</div>
+            <h3>Location Permission দরকার</h3>
+            <p>কাছের users দেখতে এবং নিজের location share করতে location permission দাও।</p>
+            <div class="popup-buttons">
+                <button class="btn-primary" id="allow-btn">Allow করো</button>
+                <button class="btn-cancel" id="deny-btn">এখন না</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-page">
+    <div class="map-controls">
+        <div class="location-status" id="location-status">
+            <div class="status-dot"></div>
+            <span>Location খোঁজা হচ্ছে...</span>
+        </div>
+        <div class="privacy-toggle">
+            <span>আমার location:</span>
+            <select id="privacy-select" onchange="updatePrivacy()">
+                <option value="only_me">🔒 Only Me</option>
+                <option value="public">🌍 Public</option>
+            </select>
+        </div>
+        <button id="refresh-btn" onclick="refreshMap()" style="
+            padding:6px 14px;background:white;border:1.5px solid #e0e0e0;
+            border-radius:8px;font-size:13px;cursor:pointer;color:#555;
+            transition:all 0.2s;white-space:nowrap;
+        ">🔄 Refresh</button>
+        <button id="distance-btn" onclick="showDistances()" style="
+            padding:6px 14px;background:white;border:1.5px solid #e0e0e0;
+            border-radius:8px;font-size:13px;cursor:pointer;color:#555;
+            transition:all 0.2s;white-space:nowrap;
+        ">📏 দূরত্ব</button>
+        <div class="nearby-count">
+            <span id="nearby-count">0</span> জন কাছে active
+        </div>
+    </div>
+    <div id="map"></div>
+</div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/map.js"></script>
+
+</body>
+</html>

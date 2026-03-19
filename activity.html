@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Activity</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-logo">🏃 FitLife</div>
+        <ul class="nav-links">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="activity.html" class="active">Activity</a></li>
+            <li><a href="map.html">Live Map</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="user-name">...</span>
+            <button onclick="handleLogout()" class="btn-logout">Logout</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <!-- ACTIVITY PAGE -->
+    <div class="activity-page">
+
+        <!-- TYPE SELECT -->
+        <div class="activity-select" id="select-section">
+            <h2>কোন activity করবে?</h2>
+            <div class="type-grid">
+                <div class="type-card" onclick="selectType('walking')" id="type-walking">
+                    <span>🚶</span>
+                    <h3>Walking</h3>
+                </div>
+                <div class="type-card" onclick="selectType('jogging')" id="type-jogging">
+                    <span>🏃</span>
+                    <h3>Jogging</h3>
+                </div>
+                <div class="type-card" onclick="selectType('running')" id="type-running">
+                    <span>🏃‍♂️</span>
+                    <h3>Running</h3>
+                </div>
+                <div class="type-card" onclick="selectType('cycling')" id="type-cycling">
+                    <span>🚴</span>
+                    <h3>Cycling</h3>
+                </div>
+            </div>
+            <button class="btn-primary btn-start" id="start-btn" onclick="startActivity()" disabled>
+                Activity শুরু করো
+            </button>
+        </div>
+
+        <!-- TRACKING SECTION -->
+        <div class="tracking-section hidden" id="tracking-section">
+            <div class="tracking-header">
+                <span id="activity-icon">🚶</span>
+                <h2 id="activity-label">Walking</h2>
+            </div>
+
+            <div class="tracking-stats">
+                <div class="track-stat">
+                    <span id="timer">00:00:00</span>
+                    <p>সময়</p>
+                </div>
+                <div class="track-stat">
+                    <span id="distance">0.00</span>
+                    <p>কিলোমিটার</p>
+                </div>
+                <div class="track-stat">
+                    <span id="speed">0.0</span>
+                    <p>km/h গতি</p>
+                </div>
+            </div>
+
+            <div class="tracking-status">
+                <div class="status-dot"></div>
+                <span>Live tracking চলছে</span>
+            </div>
+
+            <button class="btn-stop" onclick="stopActivity()">
+                Activity শেষ করো
+            </button>
+        </div>
+
+        <!-- RESULT SECTION -->
+        <div class="result-section hidden" id="result-section">
+            <div class="result-card">
+                <div class="result-icon">🎉</div>
+                <h2>দারুণ কাজ!</h2>
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <span id="result-distance">0.00 km</span>
+                        <p>দূরত্ব</p>
+                    </div>
+                    <div class="result-stat">
+                        <span id="result-time">00:00</span>
+                        <p>সময়</p>
+                    </div>
+                </div>
+                <div class="result-buttons">
+                    <button class="btn-primary" onclick="newActivity()">আবার করো</button>
+                    <a href="profile.html" class="btn-secondary-green">Profile দেখো</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/activity.js"></script>
+
+</body>
+</html>

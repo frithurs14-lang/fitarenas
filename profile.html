@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Profile</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">🏃 FitLife</div>
+        <ul class="nav-links">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="activity.html">Activity</a></li>
+            <li><a href="map.html">Live Map</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html" class="active">Profile</a></li>
+        </ul>
+        <div class="nav-right">
+            <span id="user-name">...</span>
+            <button onclick="handleLogout()" class="btn-logout">Logout</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <div class="profile-page">
+
+        <!-- PROFILE HEADER -->
+        <div class="profile-header">
+    <div class="profile-avatar" id="profile-avatar">?</div>
+    <div class="profile-info">
+        <h2 id="profile-name">লোড হচ্ছে...</h2>
+        <p id="profile-passion" class="profile-passion"></p>
+        <p id="profile-bio" class="profile-bio"></p>
+        <div class="follow-stats">
+            <div class="follow-stat" onclick="showFollowers()">
+                <span id="followers-count">0</span>
+                <p>Followers</p>
+            </div>
+            <div class="follow-stat" onclick="showFollowing()">
+                <span id="following-count">0</span>
+                <p>Following</p>
+            </div>
+        </div>
+    </div>
+    <div class="profile-buttons">
+        <button class="btn-edit" onclick="toggleEdit()">✏️ Edit</button>
+        <button class="btn-follow hidden" id="follow-btn" onclick="toggleFollow()">+ Follow</button>
+    </div>
+</div>
+
+<!-- FOLLOWERS/FOLLOWING MODAL -->
+<div class="follow-modal hidden" id="follow-modal">
+    <div class="follow-modal-box">
+        <div class="follow-modal-header">
+            <h3 id="modal-title">Followers</h3>
+            <button onclick="closeModal()">✕</button>
+        </div>
+        <div class="follow-modal-list" id="modal-list"></div>
+    </div>
+</div>
+
+        <!-- EDIT FORM -->
+        <div class="edit-form hidden" id="edit-form">
+            <h3>Profile Update করো</h3>
+            <div class="form-group">
+                <label>নাম</label>
+                <input type="text" id="edit-name" placeholder="তোমার নাম" />
+            </div>
+            <div class="form-group">
+                <label>Passion</label>
+                <input type="text" id="edit-passion" placeholder="যেমন: Walking lover, Cyclist" />
+            </div>
+            <div class="form-group">
+                <label>Bio</label>
+                <textarea id="edit-bio" placeholder="তোমার সম্পর্কে কিছু লিখো" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+    <label>Avatar Color</label>
+    <div class="color-options">
+        <div class="color-opt" style="background:#1a8a5a" data-color="#1a8a5a" onclick="selectColor(this)">✓</div>
+        <div class="color-opt" style="background:#e74c3c" data-color="#e74c3c" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:#3498db" data-color="#3498db" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:#f39c12" data-color="#f39c12" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:#9b59b6" data-color="#9b59b6" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:#e91e8c" data-color="#e91e8c" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:#1abc9c" data-color="#1abc9c" onclick="selectColor(this)"></div>
+    </div>
+</div>
+            <div class="edit-buttons">
+                <button class="btn-primary" onclick="saveProfile()">Save করো</button>
+                <button class="btn-cancel" onclick="toggleEdit()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="profile-stats">
+            <div class="stat-card">
+                <span id="stat-total">0</span>
+                <p>মোট km</p>
+            </div>
+            <div class="stat-card">
+                <span id="stat-walking">0</span>
+                <p>🚶 Walking</p>
+            </div>
+            <div class="stat-card">
+                <span id="stat-jogging">0</span>
+                <p>🏃 Jogging</p>
+            </div>
+            <div class="stat-card">
+                <span id="stat-running">0</span>
+                <p>🏃‍♂️ Running</p>
+            </div>
+            <div class="stat-card">
+                <span id="stat-cycling">0</span>
+                <p>🚴 Cycling</p>
+            </div>
+        </div>
+
+        <!-- BADGES -->
+        <div class="profile-section">
+            <h3>🏅 Badges</h3>
+            <div class="badges-grid" id="badges-grid">
+                <div class="badge-item locked">
+                    <span>🥉</span>
+                    <p>First Step</p>
+                    <small>১ km হাঁটো</small>
+                </div>
+                <div class="badge-item locked">
+                    <span>🥈</span>
+                    <p>Walker</p>
+                    <small>১০ km হাঁটো</small>
+                </div>
+                <div class="badge-item locked">
+                    <span>🥇</span>
+                    <p>Runner</p>
+                    <small>৫০ km করো</small>
+                </div>
+                <div class="badge-item locked">
+                    <span>🏆</span>
+                    <p>Champion</p>
+                    <small>১০০ km করো</small>
+                </div>
+                <div class="badge-item locked">
+                    <span>🚴</span>
+                    <p>Cyclist</p>
+                    <small>২০ km cycle করো</small>
+                </div>
+                <div class="badge-item locked">
+                    <span>⚡</span>
+                    <p>Speedster</p>
+                    <small>৭ দিন streak</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISITORS -->
+        <div class="profile-section">
+            <h3>👀 কে কে Profile দেখেছে 
+                <span class="visitor-count" id="visitor-count">0</span>
+            </h3>
+            <div id="visitors-list" class="visitors-list">
+                <p class="no-visitors">এখনো কেউ দেখেনি</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/profile.js"></script>
+
+</body>
+</html>
