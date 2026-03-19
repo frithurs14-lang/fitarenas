@@ -1503,6 +1503,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     border-bottom: 1px solid #e8f5ee;
+    flex-shrink: 0;
 }
 
 .chat-tab {
@@ -1527,6 +1528,14 @@ body {
 
 /* ========== PUBLIC CHAT ========== */
 
+#public-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .public-messages {
     flex: 1;
     overflow-y: auto;
@@ -1534,7 +1543,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: calc(100vh - 230px);
+    min-height: 0;
 }
 
 .public-msg {
@@ -1603,9 +1612,7 @@ body {
     gap: 8px;
     border-top: 1px solid #e8f5ee;
     background: white;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
+    flex-shrink: 0;
 }
 
 .public-input-area input {
@@ -1623,13 +1630,14 @@ body {
     border-color: #1a8a5a;
 }
 
-
 /* ========== CHAT WINDOW ========== */
 
 .chat-window {
     display: flex;
     flex-direction: column;
     background: #f8fffe;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .no-chat {
@@ -1660,6 +1668,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .chat-header {
@@ -1670,6 +1680,7 @@ body {
     gap: 12px;
     border-bottom: 1px solid #e8f5ee;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    flex-shrink: 0;
 }
 
 .back-btn {
@@ -1722,6 +1733,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
 }
 
 .message-bubble {
@@ -1761,9 +1773,7 @@ body {
     display: flex;
     gap: 10px;
     border-top: 1px solid #e8f5ee;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
+    flex-shrink: 0;
 }
 
 .message-input-area input {
@@ -1812,6 +1822,10 @@ body {
         z-index: 50;
     }
     .back-btn { display: block; }
+    .public-input-area input,
+    .message-input-area input {
+        font-size: 16px;
+    }
 }
 
 /* ========== LEADERBOARD PAGE ========== */
