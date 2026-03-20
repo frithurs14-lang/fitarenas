@@ -10,6 +10,15 @@ let realtimeChannel = null
 let distanceLines = []
 let distancesVisible = false
 
+window.addEventListener('beforeunload', () => {
+    if (currentUser) {
+        navigator.sendBeacon(
+            `https://rmvtyysvnhvfodozijrl.supabase.co/rest/v1/live_locations?user_id=eq.${currentUser.id}`,
+            JSON.stringify({ is_active: false })
+        )
+    }
+})
+
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession()
     if (!session) {
