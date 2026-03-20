@@ -106,18 +106,25 @@ function requestLocation() {
     }
 
     navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            locationGranted = true
-            currentLat = pos.coords.latitude
-            currentLng = pos.coords.longitude
-            map.setView([currentLat, currentLng], 17)
-            addUserMarker(currentLat, currentLng)
-            updateLocationStatus(true)
-            saveLocation(currentLat, currentLng)
-            loadNearbyUsers()
-            startLocationWatch()
-            startRealtimeUpdates()
-        },
+    (pos) => {
+        locationGranted = true
+        currentLat = pos.coords.latitude
+        currentLng = pos.coords.longitude
+        map.setView([currentLat, currentLng], 17)
+        addUserMarker(currentLat, currentLng)
+        updateLocationStatus(true)
+        saveLocation(currentLat, currentLng)
+        loadNearbyUsers()
+        startLocationWatch()
+        startRealtimeUpdates()
+
+        setInterval(async () => {
+            if (currentLat && currentLng) {
+                await saveLocation(currentLat, currentLng)
+            }
+            await loadNearbyUsers()
+        }, 30000)
+    },
         (err) => {
             if (err.code === 1) {
                 alert('Location permission দাও — browser settings এ Allow করো')
