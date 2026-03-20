@@ -8,7 +8,6 @@ let lastPosition = null
 let currentUser = null
 let activityStarted = null
 
-
 const typeConfig = {
     walking: { icon: '🚶', label: 'Walking', field: 'walking_km' },
     jogging: { icon: '🏃', label: 'Jogging', field: 'jogging_km' },
@@ -37,6 +36,7 @@ function selectType(type) {
     document.getElementById('type-' + type).classList.add('selected')
     document.getElementById('start-btn').disabled = false
 }
+
 function startActivity() {
     if (!selectedType) return
 
@@ -54,44 +54,8 @@ function startActivity() {
     lastPosition = null
 
     startTimer()
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                lastPosition = {
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude
-                }
-                startGPS()
-            },
-            (err) => {
-                if (err.code === 1) {
-                    alert('Location permission দাও — settings থেকে Allow করো')
-                }
-                startGPS()
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        )
-    } else {
-        startGPS()
-    }
+    startGPS()
 }
-    const config = typeConfig[selectedType]
-    document.getElementById('activity-icon').textContent = config.icon
-    document.getElementById('activity-label').textContent = config.label
-
-    isTracking = true
-    startTime = new Date()
-    activityStarted = new Date()
-    totalDistance = 0
-    lastPosition = null
-
-    startTimer()
-
-    if (navigator.geolocation) {
-        startGPS()
-    }
-
 
 function startTimer() {
     timerInterval = setInterval(() => {
@@ -105,9 +69,10 @@ function startTimer() {
 }
 
 function startGPS() {
+    if (!navigator.geolocation) return
+
     watchId = navigator.geolocation.watchPosition(
         (position) => {
-            if (isIndoorMode) return
             const { latitude, longitude, speed } = position.coords
             if (lastPosition) {
                 const dist = calculateDistance(
@@ -140,7 +105,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
 }
-
 
 async function stopActivity() {
     isTracking = false
@@ -199,11 +163,10 @@ async function saveActivity(distance, duration) {
                     [field]: distance,
                     last_active: new Date().toISOString().split('T')[0]
                 })
-            console.log('নতুন profile তৈরি হয়েছে!')
             return
         }
 
-        const { error: updateError } = await supabaseClient
+        await supabaseClient
             .from('profiles')
             .update({
                 total_km: parseFloat(profileData.total_km || 0) + distance,
@@ -211,11 +174,6 @@ async function saveActivity(distance, duration) {
                 last_active: new Date().toISOString().split('T')[0]
             })
             .eq('id', currentUser.id)
-
-        if (updateError) {
-            console.log('Update error:', updateError)
-            return
-        }
 
         console.log('সব save হয়েছে!')
 
@@ -228,8 +186,6 @@ function newActivity() {
     selectedType = null
     totalDistance = 0
     lastPosition = null
-    indoorTotalMeters = 0
-    isIndoorMode = false
 
     document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'))
     document.getElementById('start-btn').disabled = true
@@ -238,9 +194,6 @@ function newActivity() {
     document.getElementById('timer').textContent = '00:00:00'
     document.getElementById('distance').textContent = '0.00'
     document.getElementById('speed').textContent = '0.0'
-    document.getElementById('indoor-mode').checked = false
-    document.getElementById('indoor-input').classList.add('hidden')
-    document.getElementById('indoor-total').textContent = '0'
 }
 
 async function handleLogout() {
