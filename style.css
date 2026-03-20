@@ -1797,21 +1797,21 @@ body {
 }
 
 .top-card.rank-1 {
-    border-color: #FFD700;
-    background: linear-gradient(135deg, #fffef0, #fff8d0);
+    border-color: #00bcd4;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
     order: 2;
     padding-bottom: 24px;
 }
 
 .top-card.rank-2 {
-    border-color: #C0C0C0;
-    background: linear-gradient(135deg, #f8f8f8, #efefef);
+    border-color: #7c83d4;
+    background: linear-gradient(135deg, #f0f4ff, #dde3ff);
     order: 1;
 }
 
 .top-card.rank-3 {
-    border-color: #CD7F32;
-    background: linear-gradient(135deg, #fff5ee, #ffeedd);
+    border-color: #FFD700;
+    background: linear-gradient(135deg, #fffef0, #fff8d0);
     order: 3;
 }
 
@@ -1839,8 +1839,8 @@ body {
     width: 56px;
     height: 56px;
     font-size: 22px;
-    background: #FFD700;
-    color: #856404;
+    background: #00bcd4;
+    color: white;
 }
 
 .top-name {
@@ -2073,4 +2073,8 @@ body {
     border-radius: 50%;
     flex-shrink: 0;
     animation: pulse 1.5s infinite;
+}
+.level-platinum {
+    background: #f0f4ff;
+    color: #4a5ab7;
 }
