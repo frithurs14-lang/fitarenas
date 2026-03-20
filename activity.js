@@ -90,7 +90,9 @@ function startGPS() {
                     lastPosition.lat, lastPosition.lng,
                     latitude, longitude
                 )
-                if (dist > 0.003) {
+                const minDist = selectedType === 'cycling' ? 0.005 :
+                selectedType === 'running' ? 0.004 : 0.003
+if (dist > minDist) {
                     totalDistance += dist
                     document.getElementById('distance').textContent =
                         totalDistance.toFixed(2)
