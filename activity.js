@@ -37,7 +37,6 @@ function selectType(type) {
     document.getElementById('type-' + type).classList.add('selected')
     document.getElementById('start-btn').disabled = false
 }
-
 function startActivity() {
     if (!selectedType) return
 
@@ -57,9 +56,42 @@ function startActivity() {
     startTimer()
 
     if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                lastPosition = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                }
+                startGPS()
+            },
+            (err) => {
+                if (err.code === 1) {
+                    alert('Location permission দাও — settings থেকে Allow করো')
+                }
+                startGPS()
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        )
+    } else {
         startGPS()
     }
 }
+    const config = typeConfig[selectedType]
+    document.getElementById('activity-icon').textContent = config.icon
+    document.getElementById('activity-label').textContent = config.label
+
+    isTracking = true
+    startTime = new Date()
+    activityStarted = new Date()
+    totalDistance = 0
+    lastPosition = null
+
+    startTimer()
+
+    if (navigator.geolocation) {
+        startGPS()
+    }
+
 
 function startTimer() {
     timerInterval = setInterval(() => {
