@@ -1391,120 +1391,14 @@ body {
     }
 }
 
-/* ========== CHAT PAGE ========== */
-
-.chat-page {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    height: calc(100vh - 60px);
-}
-
-.chat-sidebar {
-    border-right: 1px solid #e8f5ee;
-    display: flex;
-    flex-direction: column;
-    background: white;
-}
-
-.sidebar-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid #e8f5ee;
-}
-
-.sidebar-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-}
-
-.sidebar-header small {
-    font-size: 12px;
-    color: #aaa;
-}
-
-.sidebar-search {
-    padding: 12px 16px;
-    border-bottom: 1px solid #e8f5ee;
-}
-
-.sidebar-search input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 20px;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.sidebar-search input:focus {
-    border-color: #1a8a5a;
-}
-
-.users-list {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.loading-msg {
-    padding: 20px;
-    text-align: center;
-    font-size: 13px;
-    color: #aaa;
-}
-
-.user-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: background 0.2s;
-    border-bottom: 0.5px solid #f0f0f0;
-}
-
-.user-item:hover { background: #f8fffe; }
-.user-item.active { background: #f0fff6; }
-
-.user-item-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #1a8a5a;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.user-item-info { flex: 1; min-width: 0; }
-
-.user-item-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 2px;
-}
-
-.user-item-preview {
-    font-size: 12px;
-    color: #888;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 /* ========== CHAT TABS ========== */
 
 .chat-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
     border-bottom: 1px solid #e8f5ee;
+    flex-shrink: 0;
 }
-
 
 .chat-tab {
     padding: 12px;
@@ -1535,7 +1429,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: calc(100vh - 230px);
+    min-height: 0;
 }
 
 .public-msg {
@@ -1604,9 +1498,7 @@ body {
     gap: 8px;
     border-top: 1px solid #e8f5ee;
     background: white;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
+    flex-shrink: 0;
 }
 
 .public-input-area input {
@@ -1624,15 +1516,14 @@ body {
     border-color: #1a8a5a;
 }
 
-
 /* ========== CHAT WINDOW ========== */
 
 .chat-window {
     display: flex;
     flex-direction: column;
     background: #f8fffe;
-    height: calc(100vh - 60px);
     overflow: hidden;
+    min-height: 0;
 }
 
 .no-chat {
@@ -1663,6 +1554,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .chat-header {
@@ -1673,6 +1566,7 @@ body {
     gap: 12px;
     border-bottom: 1px solid #e8f5ee;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    flex-shrink: 0;
 }
 
 .back-btn {
@@ -1725,6 +1619,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
 }
 
 .message-bubble {
@@ -1764,9 +1659,7 @@ body {
     display: flex;
     gap: 10px;
     border-top: 1px solid #e8f5ee;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
+    flex-shrink: 0;
 }
 
 .message-input-area input {
@@ -1815,26 +1708,10 @@ body {
         z-index: 50;
     }
     .back-btn { display: block; }
-}
-
-/* ========== LEADERBOARD PAGE ========== */
-
-.leaderboard-page {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 30px 20px;
-}
-
-.leaderboard-header {
-    text-align: center;
-    margin-bottom: 24px;
-}
-
-.leaderboard-header h2 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #1a8a5a;
-    margin-bottom: 6px;
+    .public-input-area input,
+    .message-input-area input {
+        font-size: 16px;
+    }
 }
 
 .leaderboard-header p { font-size: 14px; color: #888; }
