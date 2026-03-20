@@ -220,14 +220,16 @@ async function loadNearbyUsers() {
 
     document.getElementById('nearby-count').textContent = nearby.length
 
+    if (map) {
     Object.keys(otherMarkers).forEach(id => {
-        map.removeLayer(otherMarkers[id])
+        try { map.removeLayer(otherMarkers[id]) } catch(e) {}
     })
-    otherMarkers = {}
+}
+otherMarkers = {}
 
-    for (const user of nearby) {
-        await addOtherMarker(user)
-    }
+for (const user of nearby) {
+    await addOtherMarker(user)
+}
 
     if (distancesVisible) {
         distanceLines.forEach(l => map.removeLayer(l))
