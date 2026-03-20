@@ -69,16 +69,23 @@ async function loadProfile() {
     document.getElementById('profile-passion').textContent = data.passion || ''
     document.getElementById('profile-bio').textContent = data.bio || ''
 
-    document.getElementById('stat-total').textContent =
-        parseFloat(data.total_km || 0).toFixed(1)
-    document.getElementById('stat-walking').textContent =
-        parseFloat(data.walking_km || 0).toFixed(1)
-    document.getElementById('stat-jogging').textContent =
-        parseFloat(data.jogging_km || 0).toFixed(1)
-    document.getElementById('stat-running').textContent =
-        parseFloat(data.running_km || 0).toFixed(1)
-    document.getElementById('stat-cycling').textContent =
-        parseFloat(data.cycling_km || 0).toFixed(1)
+    const { data: logs } = await supabaseClient
+    .from('activity_logs')
+    .select('distance_km, activity_type')
+    .eq('user_id', viewingUserId || currentUser.id)
+
+const stats = { total: 0, walking: 0, jogging: 0, running: 0, cycling: 0 }
+logs?.forEach(log => {
+    const d = parseFloat(log.distance_km || 0)
+    stats.total += d
+    stats[log.activity_type] = (stats[log.activity_type] || 0) + d
+})
+
+document.getElementById('stat-total').textContent = stats.total.toFixed(2)
+document.getElementById('stat-walking').textContent = (stats.walking || 0).toFixed(2)
+document.getElementById('stat-jogging').textContent = (stats.jogging || 0).toFixed(2)
+document.getElementById('stat-running').textContent = (stats.running || 0).toFixed(2)
+document.getElementById('stat-cycling').textContent = (stats.cycling || 0).toFixed(2)
 
     updateBadges(data)
 }
