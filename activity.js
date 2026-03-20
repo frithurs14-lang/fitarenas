@@ -142,6 +142,17 @@ async function stopActivity() {
 
 async function saveActivity(distance, duration) {
     try {
+        const durationHours = duration / 3600
+        const maxSpeed = selectedType === 'cycling' ? 60 :
+                         selectedType === 'running' ? 25 :
+                         selectedType === 'jogging' ? 15 : 10
+        const maxPossibleKm = durationHours * maxSpeed
+
+        if (distance > maxPossibleKm) {
+            alert('Invalid activity! এত কম সময়ে এত দূর যাওয়া সম্ভব না।')
+            return
+        }
+
         const { error: logError } = await supabaseClient
             .from('activity_logs')
             .insert({
