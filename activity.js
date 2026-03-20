@@ -71,6 +71,17 @@ function startTimer() {
 function startGPS() {
     if (!navigator.geolocation) return
 
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            lastPosition = {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude
+            }
+        },
+        (err) => console.log('Initial GPS error:', err),
+        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+    )
+
     watchId = navigator.geolocation.watchPosition(
         (position) => {
             const { latitude, longitude, speed } = position.coords
@@ -90,7 +101,7 @@ function startGPS() {
             document.getElementById('speed').textContent = kmh
         },
         (err) => console.log('GPS error:', err),
-        { enableHighAccuracy: false, maximumAge: 30000, timeout: 30000 }
+        { enableHighAccuracy: false, maximumAge: 10000, timeout: 30000 }
     )
 }
 
