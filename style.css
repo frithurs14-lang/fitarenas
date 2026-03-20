@@ -1976,6 +1976,16 @@ body {
         padding: 20px;
         gap: 14px;
     }
+    .mobile-logout {
+    display: none;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #666;
+}
 
     .profile-avatar {
         width: 60px;
