@@ -9,6 +9,7 @@ let locationGranted = false
 let realtimeChannel = null
 let distanceLines = []
 let distancesVisible = false
+let isLoadingNearby = false
 
 window.addEventListener('beforeunload', () => {
     if (currentUser) {
@@ -197,6 +198,8 @@ async function saveLocation(lat, lng) {
 
 async function loadNearbyUsers() {
     if (!currentLat || !currentLng) return
+    if (isLoadingNearby) return
+    isLoadingNearby = true
 
     const { data, error } = await supabaseClient
         .from('live_locations')
@@ -207,6 +210,7 @@ async function loadNearbyUsers() {
 
     if (error) {
         console.log('Nearby error:', error)
+        isLoadingNearby = false
         return
     }
 
@@ -221,15 +225,15 @@ async function loadNearbyUsers() {
     document.getElementById('nearby-count').textContent = nearby.length
 
     if (map) {
-    Object.keys(otherMarkers).forEach(id => {
-        try { map.removeLayer(otherMarkers[id]) } catch(e) {}
-    })
-}
-otherMarkers = {}
+        Object.keys(otherMarkers).forEach(id => {
+            try { map.removeLayer(otherMarkers[id]) } catch(e) {}
+        })
+    }
+    otherMarkers = {}
 
-for (const user of nearby) {
-    await addOtherMarker(user)
-}
+    for (const user of nearby) {
+        await addOtherMarker(user)
+    }
 
     if (distancesVisible) {
         distanceLines.forEach(l => map.removeLayer(l))
@@ -238,6 +242,8 @@ for (const user of nearby) {
         const btn = document.getElementById('distance-btn')
         if (btn) btn.textContent = '📏 দূরত্ব'
     }
+
+    isLoadingNearby = false
 }
 
 async function addOtherMarker(user) {
