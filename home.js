@@ -25,6 +25,15 @@ async function handleLogout() {
 
 // ========== LOAD USER STATS ==========
 
+async function loadNearbyCount() {
+    const { data } = await supabaseClient
+        .from('live_locations')
+        .select('user_id')
+        .eq('is_active', true)
+        .eq('location_status', 'public')
+
+    document.getElementById('nearby-count').textContent = data?.length || 0
+}
 async function loadUserStats(userId) {
     try {
         const { data, error } = await supabaseClient
@@ -54,3 +63,5 @@ function toggleMenu() {
 // ========== START ==========
 
 checkAuth()
+loadNearbyCount()
+setInterval(loadNearbyCount, 30000)
