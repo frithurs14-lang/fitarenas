@@ -179,14 +179,26 @@ async function saveActivity(distance, duration) {
             return
         }
 
-        await supabaseClient
-            .from('profiles')
-            .update({
-                total_km: parseFloat(profileData.total_km || 0) + distance,
-                [field]: parseFloat(profileData[field] || 0) + distance,
-                last_active: new Date().toISOString().split('T')[0]
-            })
-            .eq('id', currentUser.id)
+        const today = new Date().toISOString().split('T')[0]
+const lastActive = profileData.last_active
+const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+
+let newStreak = 1
+if (lastActive === yesterday) {
+    newStreak = (profileData.streak_days || 0) + 1
+} else if (lastActive === today) {
+    newStreak = profileData.streak_days || 1
+}
+
+await supabaseClient
+    .from('profiles')
+    .update({
+        total_km: parseFloat(profileData.total_km || 0) + distance,
+        [field]: parseFloat(profileData[field] || 0) + distance,
+        last_active: today,
+        streak_days: newStreak
+    })
+    .eq('id', currentUser.id)
 
         console.log('সব save হয়েছে!')
 
