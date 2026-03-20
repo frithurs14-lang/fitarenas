@@ -120,6 +120,14 @@ function getLevel(km) {
     if (km >= 10) return { label: '🥈 Silver', class: 'level-silver' }
     return { label: '🥉 Bronze', class: 'level-bronze' }
 }
+// ========== GET LEVEL ==========
+
+function getLevel(km, rank) {
+    if (rank === 1) return { label: '💎 Diamond', class: 'level-diamond' }
+    if (rank === 2) return { label: '🏆 Platinum', class: 'level-platinum' }
+    if (rank === 3) return { label: '🥇 Gold', class: 'level-gold' }
+    return { label: '🥉 Bronze', class: 'level-bronze' }
+}
 
 // ========== RENDER TOP 3 ==========
 
@@ -128,10 +136,17 @@ function renderTopThree(ranked) {
     const container = document.getElementById('top-three')
     container.innerHTML = ''
 
+    if (top3.length === 0) return
+
     const icons = ['🥇', '🥈', '🥉']
     const rankClasses = ['rank-1', 'rank-2', 'rank-3']
+    const order = top3.length === 1 ? [0] :
+                  top3.length === 2 ? [1, 0] :
+                  [1, 0, 2]
 
-    top3.forEach((user, i) => {
+    order.forEach(i => {
+        if (!top3[i]) return
+        const user = top3[i]
         const name = user.full_name || 'Unknown'
         const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
@@ -162,7 +177,7 @@ function renderList(ranked) {
         const name = user.full_name || 'Unknown'
         const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         const isMe = user.id === currentUser.id
-        const level = getLevel(user.total_km)
+        const level = getLevel(user.total_km, rank)
 
         let rankColor = ''
         if (rank === 1) rankColor = 'gold'
@@ -207,7 +222,7 @@ function renderMyRank(ranked) {
     }
 
     const me = ranked[myIndex]
-    const level = getLevel(me.total_km)
+    const level = getLevel(me.total_km, myIndex + 1)
 
     container.innerHTML = `
         <div class="my-rank-number">#${myIndex + 1}</div>
