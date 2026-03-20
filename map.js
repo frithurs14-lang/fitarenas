@@ -214,13 +214,7 @@ async function loadNearbyUsers() {
         return
     }
 
-    const nearby = data.filter(u => {
-        const dist = calculateDistance(
-            currentLat, currentLng,
-            u.latitude, u.longitude
-        )
-        return dist <= 5
-    })
+    const nearby = data
 
     document.getElementById('nearby-count').textContent = nearby.length
 
