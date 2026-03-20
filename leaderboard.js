@@ -2,8 +2,6 @@ let currentUser = null
 let currentPeriod = 'weekly'
 let currentActivity = 'all'
 
-// ========== AUTH CHECK ==========
-
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession()
     if (!session) {
@@ -17,8 +15,6 @@ async function checkAuth() {
     await loadLeaderboard()
 }
 
-// ========== CHANGE PERIOD ==========
-
 function changePeriod(period) {
     currentPeriod = period
     document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'))
@@ -26,16 +22,12 @@ function changePeriod(period) {
     loadLeaderboard()
 }
 
-// ========== CHANGE ACTIVITY ==========
-
 function changeActivity(activity) {
     currentActivity = activity
     document.querySelectorAll('.filter-btn').forEach(t => t.classList.remove('active'))
     event.target.classList.add('active')
     loadLeaderboard()
 }
-
-// ========== GET DATE RANGE ==========
 
 function getDateRange() {
     const now = new Date()
@@ -53,8 +45,6 @@ function getDateRange() {
 
     return from.toISOString()
 }
-
-// ========== LOAD LEADERBOARD ==========
 
 async function loadLeaderboard() {
     document.getElementById('leaderboard-list').innerHTML =
@@ -104,23 +94,13 @@ async function loadLeaderboard() {
 
     const ranked = profiles.map(p => ({
         ...p,
-        total_km: userTotals[p.id] || 0
+        total_km: parseFloat((userTotals[p.id] || 0).toFixed(2))
     })).sort((a, b) => b.total_km - a.total_km)
 
     renderTopThree(ranked)
     renderList(ranked)
     renderMyRank(ranked)
 }
-
-// ========== GET LEVEL ==========
-
-function getLevel(km) {
-    if (km >= 100) return { label: '💎 Diamond', class: 'level-diamond' }
-    if (km >= 50) return { label: '🥇 Gold', class: 'level-gold' }
-    if (km >= 10) return { label: '🥈 Silver', class: 'level-silver' }
-    return { label: '🥉 Bronze', class: 'level-bronze' }
-}
-// ========== GET LEVEL ==========
 
 function getLevel(km, rank) {
     if (rank === 1) return { label: '💎 Diamond', class: 'level-diamond' }
@@ -129,8 +109,6 @@ function getLevel(km, rank) {
     return { label: '🥉 Bronze', class: 'level-bronze' }
 }
 
-// ========== RENDER TOP 3 ==========
-
 function renderTopThree(ranked) {
     const top3 = ranked.slice(0, 3)
     const container = document.getElementById('top-three')
@@ -138,7 +116,7 @@ function renderTopThree(ranked) {
 
     if (top3.length === 0) return
 
-    const icons = ['🥇', '🥈', '🥉']
+    const icons = ['💎', '🏆', '🥇']
     const rankClasses = ['rank-1', 'rank-2', 'rank-3']
     const order = top3.length === 1 ? [0] :
                   top3.length === 2 ? [1, 0] :
@@ -166,8 +144,6 @@ function renderTopThree(ranked) {
     })
 }
 
-// ========== RENDER LIST ==========
-
 function renderList(ranked) {
     const list = document.getElementById('leaderboard-list')
     list.innerHTML = ''
@@ -192,19 +168,17 @@ function renderList(ranked) {
             <div class="lb-avatar">${initials}</div>
             <div class="lb-info">
                 <div class="lb-name">${name} ${isMe ? '(আমি)' : ''}</div>
-                <div class="lb-details">${user.total_km.toFixed(1)} km</div>
+                <div class="lb-details">${user.total_km.toFixed(2)} km</div>
             </div>
             <span class="lb-level ${level.class}">${level.label}</span>
             <div class="lb-km">
-                ${user.total_km.toFixed(1)}
+                ${user.total_km.toFixed(2)}
                 <span>km</span>
             </div>
         `
         list.appendChild(div)
     })
 }
-
-// ========== RENDER MY RANK ==========
 
 function renderMyRank(ranked) {
     const myIndex = ranked.findIndex(u => u.id === currentUser.id)
@@ -231,12 +205,10 @@ function renderMyRank(ranked) {
             <h4>${level.label}</h4>
         </div>
         <div class="my-rank-km">
-            ${me.total_km.toFixed(1)} km
+            ${me.total_km.toFixed(2)} km
         </div>
     `
 }
-
-// ========== LOGOUT & MENU ==========
 
 async function handleLogout() {
     await supabaseClient.auth.signOut()
@@ -246,7 +218,5 @@ async function handleLogout() {
 function toggleMenu() {
     document.querySelector('.nav-links').classList.toggle('open')
 }
-
-// ========== START ==========
 
 checkAuth()
