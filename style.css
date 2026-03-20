@@ -1413,13 +1413,6 @@ body {
 }
 
 .chat-tab:hover { color: #1a8a5a; background: #f8fffe; }
-#inbox-section {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
 
 .chat-tab.active {
     color: #1a8a5a;
