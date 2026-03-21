@@ -24,9 +24,14 @@ async function checkAuth() {
     document.getElementById('user-name').textContent =
         profile?.full_name || currentUser.email
 
+    if ('Notification' in window) {
+        Notification.requestPermission()
+    }
+
     await loadUsers()
     await loadPublicMessages()
     subscribeToPublic()
+    subscribeToIncomingMessages()
 
     const chatWith = localStorage.getItem('chatWith')
     if (chatWith) {
@@ -107,6 +112,13 @@ function renderPublicMessage(msg) {
     `
     container.appendChild(div)
     container.scrollTop = container.scrollHeight
+
+    if (!isOwn && currentTab !== 'public') {
+        showNotification('🌍 Public Chat', `${name}: ${msg.message}`, () => {
+            window.focus()
+            switchTab('public')
+        })
+    }
 }
 
 async function sendPublicMessage() {
@@ -150,6 +162,68 @@ function subscribeToPublic() {
             }
         )
         .subscribe()
+}
+
+function subscribeToIncomingMessages() {
+    supabaseClient
+        .channel('incoming_messages_' + currentUser.id)
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'chat_messages',
+              filter: `receiver_id=eq.${currentUser.id}` },
+            async (payload) => {
+                const msg = payload.new
+                if (msg.sender_id === selectedUserId) return
+
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', msg.sender_id)
+                    .single()
+
+                const name = profile?.full_name || 'কেউ'
+
+                const user = allUsers.find(u => u.id === msg.sender_id)
+
+                showNotification(
+                    `💬 ${name}`,
+                    msg.message,
+                    () => {
+                        window.focus()
+                        switchTab('inbox')
+                        if (user) openChat(user)
+                    }
+                )
+
+                const item = document.getElementById('user-item-' + msg.sender_id)
+                if (item && !item.classList.contains('has-unread')) {
+                    item.classList.add('has-unread')
+                    const preview = item.querySelector('.user-item-preview')
+                    if (preview) preview.textContent = '💬 নতুন message আছে'
+                    if (!item.querySelector('.unread-dot')) {
+                        const dot = document.createElement('div')
+                        dot.className = 'unread-dot'
+                        item.appendChild(dot)
+                    }
+                }
+            }
+        )
+        .subscribe()
+}
+
+function showNotification(title, body, onClick) {
+    if (Notification.permission !== 'granted') return
+
+    const notification = new Notification(title, {
+        body: body,
+        icon: '/favicon.ico'
+    })
+
+    notification.onclick = () => {
+        onClick()
+        notification.close()
+    }
+
+    setTimeout(() => notification.close(), 5000)
 }
 
 async function loadUsers() {
