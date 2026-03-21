@@ -166,12 +166,16 @@ function subscribeToPublic() {
 
 function subscribeToIncomingMessages() {
     supabaseClient
-        .channel('incoming_messages_' + currentUser.id)
+        .channel('incoming_' + currentUser.id)
         .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'chat_messages',
-              filter: `receiver_id=eq.${currentUser.id}` },
+            { event: 'INSERT', schema: 'public', table: 'chat_messages' },
             async (payload) => {
                 const msg = payload.new
+                
+                // শুধু আমার কাছে আসা message
+                if (msg.receiver_id !== currentUser.id) return
+                
+                // যে chat এ আছি সেখান থেকে আসলে notification দরকার নেই
                 if (msg.sender_id === selectedUserId) return
 
                 const { data: profile } = await supabaseClient
@@ -181,19 +185,18 @@ function subscribeToIncomingMessages() {
                     .single()
 
                 const name = profile?.full_name || 'কেউ'
-
                 const user = allUsers.find(u => u.id === msg.sender_id)
 
                 showNotification(
                     `💬 ${name}`,
                     msg.message,
                     () => {
-                        window.focus()
                         switchTab('inbox')
                         if (user) openChat(user)
                     }
                 )
 
+                // unread dot যোগ করো
                 const item = document.getElementById('user-item-' + msg.sender_id)
                 if (item && !item.classList.contains('has-unread')) {
                     item.classList.add('has-unread')
