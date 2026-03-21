@@ -2078,3 +2078,7 @@ body {
     background: #f0f4ff;
     color: #4a5ab7;
 }
+@keyframes slideIn {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
