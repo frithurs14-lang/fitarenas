@@ -214,36 +214,37 @@ function subscribeToIncomingMessages() {
 }
 
 function showNotification(title, body, onClick) {
-    // Browser notification try করো
+    // Browser notification
     if (Notification.permission === 'granted') {
-        const notification = new Notification(title, { body })
-        notification.onclick = () => { onClick(); notification.close() }
-        setTimeout(() => notification.close(), 5000)
+        try {
+            const notification = new Notification(title, { body })
+            notification.onclick = () => { onClick(); notification.close() }
+            setTimeout(() => notification.close(), 5000)
+        } catch(e) {}
     }
 
-    // In-app notification — সব device এ কাজ করবে
+    // In-app popup — সব device এ কাজ করবে
     const existing = document.getElementById('in-app-notif')
     if (existing) existing.remove()
 
     const notif = document.createElement('div')
     notif.id = 'in-app-notif'
+    notif.style.cssText = `
+        position:fixed;top:70px;right:16px;left:16px;
+        background:#1a8a5a;color:white;
+        padding:14px 16px;border-radius:12px;
+        box-shadow:0 4px 16px rgba(0,0,0,0.3);
+        z-index:99999;cursor:pointer;
+        animation:slideIn 0.3s ease;
+    `
     notif.innerHTML = `
-        <div style="
-            position:fixed;top:70px;right:16px;
-            background:#1a8a5a;color:white;
-            padding:12px 16px;border-radius:12px;
-            box-shadow:0 4px 16px rgba(0,0,0,0.3);
-            z-index:9999;max-width:280px;
-            cursor:pointer;animation:slideIn 0.3s ease;
-        ">
-            <div style="font-weight:700;font-size:14px;margin-bottom:4px">${title}</div>
-            <div style="font-size:13px;opacity:0.9">${body}</div>
-            <div style="font-size:11px;opacity:0.7;margin-top:6px">tap করো message দেখতে</div>
-        </div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">${title}</div>
+        <div style="font-size:13px;opacity:0.9">${body}</div>
+        <div style="font-size:11px;opacity:0.7;margin-top:4px">👆 tap করো দেখতে</div>
     `
     notif.onclick = () => { onClick(); notif.remove() }
     document.body.appendChild(notif)
-    setTimeout(() => { if (notif) notif.remove() }, 5000)
+    setTimeout(() => { if (document.getElementById('in-app-notif')) notif.remove() }, 5000)
 }
 
 async function loadUsers() {
