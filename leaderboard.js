@@ -116,7 +116,7 @@ function renderTopThree(ranked) {
 
     if (top3.length === 0) return
 
-    const icons = ['💎', '🏆', '🥇']
+    const icons = ['🥇', '🥈', '🥉']
     const rankClasses = ['rank-1', 'rank-2', 'rank-3']
     const order = top3.length === 1 ? [0] :
                   top3.length === 2 ? [1, 0] :
