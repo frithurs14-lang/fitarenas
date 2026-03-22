@@ -68,6 +68,28 @@ function startTimer() {
     }, 1000)
 }
 
+async function saveActivityLocation(lat, lng) {
+    if (!currentUser) return
+    await supabaseClient
+        .from('live_locations')
+        .upsert({
+            user_id: currentUser.id,
+            latitude: lat,
+            longitude: lng,
+            is_active: true,
+            location_status: 'public',
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' })
+}
+
+async function clearActivityLocation() {
+    if (!currentUser) return
+    await supabaseClient
+        .from('live_locations')
+        .update({ is_active: false })
+        .eq('user_id', currentUser.id)
+}
+
 function startGPS() {
     if (!navigator.geolocation) return
 
@@ -77,6 +99,7 @@ function startGPS() {
                 lat: pos.coords.latitude,
                 lng: pos.coords.longitude
             }
+            saveActivityLocation(pos.coords.latitude, pos.coords.longitude)
         },
         (err) => console.log('Initial GPS error:', err),
         { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
@@ -85,14 +108,17 @@ function startGPS() {
     watchId = navigator.geolocation.watchPosition(
         (position) => {
             const { latitude, longitude, speed } = position.coords
+
+            saveActivityLocation(latitude, longitude)
+
             if (lastPosition) {
                 const dist = calculateDistance(
                     lastPosition.lat, lastPosition.lng,
                     latitude, longitude
                 )
                 const minDist = selectedType === 'cycling' ? 0.005 :
-                selectedType === 'running' ? 0.004 : 0.003
-if (dist > minDist) {
+                                selectedType === 'running' ? 0.004 : 0.003
+                if (dist > minDist) {
                     totalDistance += dist
                     document.getElementById('distance').textContent =
                         totalDistance.toFixed(2)
@@ -123,6 +149,8 @@ async function stopActivity() {
     isTracking = false
     clearInterval(timerInterval)
     if (watchId) navigator.geolocation.clearWatch(watchId)
+
+    await clearActivityLocation()
 
     const endTime = new Date()
     const durationSeconds = Math.floor((endTime - activityStarted) / 1000)
@@ -191,25 +219,25 @@ async function saveActivity(distance, duration) {
         }
 
         const today = new Date().toISOString().split('T')[0]
-const lastActive = profileData.last_active
-const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+        const lastActive = profileData.last_active
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
-let newStreak = 1
-if (lastActive === yesterday) {
-    newStreak = (profileData.streak_days || 0) + 1
-} else if (lastActive === today) {
-    newStreak = profileData.streak_days || 1
-}
+        let newStreak = 1
+        if (lastActive === yesterday) {
+            newStreak = (profileData.streak_days || 0) + 1
+        } else if (lastActive === today) {
+            newStreak = profileData.streak_days || 1
+        }
 
-await supabaseClient
-    .from('profiles')
-    .update({
-        total_km: parseFloat(profileData.total_km || 0) + distance,
-        [field]: parseFloat(profileData[field] || 0) + distance,
-        last_active: today,
-        streak_days: newStreak
-    })
-    .eq('id', currentUser.id)
+        await supabaseClient
+            .from('profiles')
+            .update({
+                total_km: parseFloat(profileData.total_km || 0) + distance,
+                [field]: parseFloat(profileData[field] || 0) + distance,
+                last_active: today,
+                streak_days: newStreak
+            })
+            .eq('id', currentUser.id)
 
         console.log('সব save হয়েছে!')
 
