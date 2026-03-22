@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitLife - Chat</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -44,20 +44,26 @@
 
             <!-- PUBLIC TAB -->
             <div id="public-section">
-                <div class="sidebar-header">
-                    <h3>🌍 Public Chat</h3>
-                    <small>সবাই দেখতে পাবে</small>
-                </div>
-                <div class="public-messages" id="public-messages">
-                    <div class="loading-msg">লোড হচ্ছে...</div>
-                </div>
-                <div class="public-input-area">
-                    <input type="text" id="public-input" 
-                        placeholder="সবার জন্য message লিখো..."
-                        onkeypress="handlePublicKeyPress(event)"/>
-                    <button class="send-btn" onclick="sendPublicMessage()">➤</button>
-                </div>
-            </div>
+    <div class="sidebar-header">
+        <h3>🌍 Public Chat</h3>
+        <small>সবাই দেখতে পাবে</small>
+    </div>
+    <div style="position:relative;flex:1;min-height:0;display:flex;flex-direction:column;">
+        <div class="public-messages" id="public-messages">
+            <div class="loading-msg">লোড হচ্ছে...</div>
+        </div>
+        <div class="scroll-btns">
+            <button class="scroll-btn" onclick="scrollPublic('up')">↑</button>
+            <button class="scroll-btn" onclick="scrollPublic('down')">↓</button>
+        </div>
+    </div>
+    <div class="public-input-area">
+        <input type="text" id="public-input" 
+            placeholder="সবার জন্য message লিখো..."
+            onkeypress="handlePublicKeyPress(event)"/>
+        <button class="send-btn" onclick="sendPublicMessage()">➤</button>
+    </div>
+</div>
 
             <!-- INBOX TAB -->
             <div id="inbox-section" class="hidden">
@@ -109,8 +115,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
-    <script src="chat.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/chat.js"></script>
 
 </body>
 </html>
