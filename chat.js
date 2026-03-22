@@ -471,5 +471,13 @@ async function handleLogout() {
 function toggleMenu() {
     document.querySelector('.nav-links').classList.toggle('open')
 }
+function scrollPublic(dir) {
+    const container = document.getElementById('public-messages')
+    container.scrollBy({ top: dir === 'up' ? -200 : 200, behavior: 'smooth' })
+}
 
+function scrollInbox(dir) {
+    const container = document.getElementById('messages-container')
+    container.scrollBy({ top: dir === 'up' ? -200 : 200, behavior: 'smooth' })
+}
 checkAuth()
