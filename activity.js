@@ -102,12 +102,15 @@ function startGPS() {
             saveActivityLocation(pos.coords.latitude, pos.coords.longitude)
         },
         (err) => console.log('Initial GPS error:', err),
-        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
     )
 
     watchId = navigator.geolocation.watchPosition(
         (position) => {
-            const { latitude, longitude, speed } = position.coords
+            const { latitude, longitude, speed, accuracy } = position.coords
+
+            // accuracy খারাপ হলে skip করো
+            if (accuracy > 20) return
 
             saveActivityLocation(latitude, longitude)
 
@@ -116,20 +119,24 @@ function startGPS() {
                     lastPosition.lat, lastPosition.lng,
                     latitude, longitude
                 )
-                const minDist = selectedType === 'cycling' ? 0.005 :
-                                selectedType === 'running' ? 0.004 : 0.003
+
+                const minDist = selectedType === 'cycling' ? 0.010 :
+                                selectedType === 'running' ? 0.008 :
+                                selectedType === 'jogging' ? 0.006 : 0.010
+
                 if (dist > minDist) {
                     totalDistance += dist
                     document.getElementById('distance').textContent =
                         totalDistance.toFixed(2)
                 }
             }
+
             lastPosition = { lat: latitude, lng: longitude }
             const kmh = speed ? (speed * 3.6).toFixed(1) : '0.0'
             document.getElementById('speed').textContent = kmh
         },
         (err) => console.log('GPS error:', err),
-        { enableHighAccuracy: false, maximumAge: 10000, timeout: 30000 }
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
     )
 }
 
