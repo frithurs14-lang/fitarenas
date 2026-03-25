@@ -10,12 +10,12 @@
   "theme_color": "#e94560",
   "icons": [
     {
-      "src": "/fitarenas/icons/icon-192.png",
+      "src": "fitarena-icon-square (1).png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/fitarenas/icons/icon-512.png",
+      "src": "fitarena-icon-square (1)(1).png",
       "sizes": "512x512",
       "type": "image/png"
     }
