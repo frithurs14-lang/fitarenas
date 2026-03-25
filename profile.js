@@ -89,7 +89,7 @@ async function loadProfile() {
 
     updateBadges(data)
 
-    // Recent Activities
+// Recent Activities
     const { data: recentLogs } = await supabaseClient
         .from('activity_logs')
         .select('*')
@@ -111,14 +111,22 @@ async function loadProfile() {
                 cycling: '🚴'
             }
             const emoji = typeEmoji[log.activity_type] || '🏃'
-            const date = new Date(log.created_at).toLocaleDateString('bn-BD')
+
+            const startDate = new Date(log.started_at || log.created_at)
+            const date = startDate.toLocaleDateString('bn-BD')
+            const time = startDate.toLocaleTimeString('bn-BD', {
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+
             const distance = parseFloat(log.distance_km || 0).toFixed(2)
-            const duration = log.duration_minutes
-                ? `${log.duration_minutes} মিনিট`
-                : ''
-            const speed = log.avg_speed_kmh
-                ? `${parseFloat(log.avg_speed_kmh).toFixed(1)} km/h`
-                : ''
+
+            const totalSec = parseInt(log.duration_seconds || 0)
+            const mins = Math.floor(totalSec / 60)
+            const secs = totalSec % 60
+            const duration = totalSec > 0
+                ? `${mins}মি ${secs}সে`
+                : '--'
 
             historyList.innerHTML += `
                 <div class="activity-history-item">
@@ -126,12 +134,12 @@ async function loadProfile() {
                         <span class="activity-history-emoji">${emoji}</span>
                         <div>
                             <p class="activity-history-type">${log.activity_type}</p>
-                            <p class="activity-history-date">${date}</p>
+                            <p class="activity-history-date">${date} · ${time}</p>
                         </div>
                     </div>
                     <div class="activity-history-right">
                         <span class="activity-history-km">${distance} km</span>
-                        <span class="activity-history-meta">${duration} ${speed}</span>
+                        <span class="activity-history-meta">⏱ ${duration}</span>
                     </div>
                 </div>
             `
