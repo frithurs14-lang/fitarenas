@@ -128,6 +128,19 @@ async function sendPublicMessage() {
 
     input.value = ''
 
+    const newMsg = {
+        user_id: currentUser.id,
+        message: message,
+        created_at: new Date().toISOString(),
+        profiles: {
+            full_name: currentProfile?.full_name || '',
+            avatar_color: currentProfile?.avatar_color || '#1a8a5a'
+        }
+    }
+
+    // আগেই screen এ দেখাও
+    renderPublicMessage(newMsg)
+
     const { error } = await supabaseClient
         .from('public_messages')
         .insert({
