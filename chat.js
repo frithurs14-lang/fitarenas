@@ -416,14 +416,20 @@ async function sendMessage() {
 
     input.value = ''
 
+    const newMsg = {
+        sender_id: currentUser.id,
+        receiver_id: selectedUserId,
+        message: message,
+        is_read: false,
+        created_at: new Date().toISOString()
+    }
+
+    // আগেই screen এ দেখাও
+    renderMessage(newMsg)
+
     const { error } = await supabaseClient
         .from('chat_messages')
-        .insert({
-            sender_id: currentUser.id,
-            receiver_id: selectedUserId,
-            message: message,
-            is_read: false
-        })
+        .insert(newMsg)
 
     if (error) {
         console.log('Send error:', error)
@@ -433,9 +439,14 @@ async function sendMessage() {
 
 function subscribeToMessages() {
     messageChannel = supabaseClient
-        .channel('messages_' + currentUser.id + '_' + selectedUserId)
+        .channel('messages_' + [currentUser.id, selectedUserId].sort().join('_'))
         .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+            { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'chat_messages',
+                filter: `receiver_id=eq.${currentUser.id}`
+            },
             (payload) => {
                 const msg = payload.new
                 const isRelevant =
