@@ -70,24 +70,73 @@ async function loadProfile() {
     document.getElementById('profile-bio').textContent = data.bio || ''
 
     const { data: logs } = await supabaseClient
-    .from('activity_logs')
-    .select('distance_km, activity_type')
-    .eq('user_id', viewingUserId || currentUser.id)
+        .from('activity_logs')
+        .select('distance_km, activity_type')
+        .eq('user_id', viewingUserId || currentUser.id)
 
-const stats = { total: 0, walking: 0, jogging: 0, running: 0, cycling: 0 }
-logs?.forEach(log => {
-    const d = parseFloat(log.distance_km || 0)
-    stats.total += d
-    stats[log.activity_type] = (stats[log.activity_type] || 0) + d
-})
+    const stats = { total: 0, walking: 0, jogging: 0, running: 0, cycling: 0 }
+    logs?.forEach(log => {
+        const d = parseFloat(log.distance_km || 0)
+        stats.total += d
+        stats[log.activity_type] = (stats[log.activity_type] || 0) + d
+    })
 
-document.getElementById('stat-total').textContent = stats.total.toFixed(2)
-document.getElementById('stat-walking').textContent = (stats.walking || 0).toFixed(2)
-document.getElementById('stat-jogging').textContent = (stats.jogging || 0).toFixed(2)
-document.getElementById('stat-running').textContent = (stats.running || 0).toFixed(2)
-document.getElementById('stat-cycling').textContent = (stats.cycling || 0).toFixed(2)
+    document.getElementById('stat-total').textContent = stats.total.toFixed(2)
+    document.getElementById('stat-walking').textContent = (stats.walking || 0).toFixed(2)
+    document.getElementById('stat-jogging').textContent = (stats.jogging || 0).toFixed(2)
+    document.getElementById('stat-running').textContent = (stats.running || 0).toFixed(2)
+    document.getElementById('stat-cycling').textContent = (stats.cycling || 0).toFixed(2)
 
     updateBadges(data)
+
+    // Recent Activities
+    const { data: recentLogs } = await supabaseClient
+        .from('activity_logs')
+        .select('*')
+        .eq('user_id', viewingUserId || currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+    const historyList = document.getElementById('activity-history-list')
+
+    if (!recentLogs || recentLogs.length === 0) {
+        historyList.innerHTML = '<p class="no-visitors">কোনো activity নেই</p>'
+    } else {
+        historyList.innerHTML = ''
+        recentLogs.forEach(log => {
+            const typeEmoji = {
+                walking: '🚶',
+                jogging: '🏃',
+                running: '🏃‍♂️',
+                cycling: '🚴'
+            }
+            const emoji = typeEmoji[log.activity_type] || '🏃'
+            const date = new Date(log.created_at).toLocaleDateString('bn-BD')
+            const distance = parseFloat(log.distance_km || 0).toFixed(2)
+            const duration = log.duration_minutes
+                ? `${log.duration_minutes} মিনিট`
+                : ''
+            const speed = log.avg_speed_kmh
+                ? `${parseFloat(log.avg_speed_kmh).toFixed(1)} km/h`
+                : ''
+
+            historyList.innerHTML += `
+                <div class="activity-history-item">
+                    <div class="activity-history-left">
+                        <span class="activity-history-emoji">${emoji}</span>
+                        <div>
+                            <p class="activity-history-type">${log.activity_type}</p>
+                            <p class="activity-history-date">${date}</p>
+                        </div>
+                    </div>
+                    <div class="activity-history-right">
+                        <span class="activity-history-km">${distance} km</span>
+                        <span class="activity-history-meta">${duration} ${speed}</span>
+                    </div>
+                </div>
+            `
+        })
+    }
 }
 
 function updateBadges(data) {
