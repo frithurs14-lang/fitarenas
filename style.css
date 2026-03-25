@@ -2110,3 +2110,54 @@ body {
 }
 
 .scroll-btn:hover { opacity: 1; }
+.activity-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.activity-history-item:last-child {
+    border-bottom: none;
+}
+
+.activity-history-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.activity-history-emoji {
+    font-size: 24px;
+}
+
+.activity-history-type {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.activity-history-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 2px 0 0 0;
+}
+
+.activity-history-right {
+    text-align: right;
+}
+
+.activity-history-km {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a8a5a;
+}
+
+.activity-history-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
