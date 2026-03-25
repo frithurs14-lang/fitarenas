@@ -98,3 +98,46 @@ function showGlobalNotif(title, body, url) {
 }
 
 initNotifications()
+// Background location tracking
+function startBackgroundLocation() {
+  if (!navigator.geolocation || !navigator.serviceWorker.controller) return
+
+  const SUPABASE_URL = 'https://rmvtyysvnhvfodozijrl.supabase.co'
+  const SUPABASE_KEY = supabaseClient.supabaseKey || window._supabaseKey
+
+  navigator.geolocation.watchPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude
+      const lng = pos.coords.longitude
+
+      // Status check
+      const { data } = await supabaseClient
+        .from('live_locations')
+        .select('location_status')
+        .eq('user_id', (await supabaseClient.auth.getSession()).data.session?.user?.id)
+        .single()
+
+      const status = data?.location_status || 'only_me'
+
+      navigator.serviceWorker.controller.postMessage({
+        type: 'UPDATE_LOCATION',
+        lat,
+        lng,
+        userId: (await supabaseClient.auth.getSession()).data.session?.user?.id,
+        status,
+        supabaseUrl: SUPABASE_URL,
+        supabaseKey: SUPABASE_KEY
+      })
+    },
+    (err) => console.log('BG location error:', err),
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+  )
+}
+
+// App load হলে background tracking শুরু
+window.addEventListener('load', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession()
+  if (session) {
+    startBackgroundLocation()
+  }
+})
