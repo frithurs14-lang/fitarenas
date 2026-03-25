@@ -50,14 +50,14 @@ async function checkAuth() {
         }
 
         permission.onchange = () => {
-            if (permission.state === 'granted') {
-                document.getElementById('location-popup').classList.add('hidden')
-                requestLocation()
-            } else if (permission.state === 'denied') {
-                document.getElementById('location-popup').classList.add('hidden')
-                updateLocationStatus(false)
-            }
-        }
+    if (permission.state === 'granted') {
+        document.getElementById('location-popup').classList.add('hidden')
+        requestLocation()
+    } else if (permission.state === 'denied') {
+        document.getElementById('location-popup').classList.add('hidden')
+        setLocationInactive()
+    }
+}
     } else {
         const { data } = await supabaseClient
             .from('live_locations')
@@ -172,10 +172,32 @@ function startLocationWatch() {
             currentLng = pos.coords.longitude
             addUserMarker(currentLat, currentLng)
             saveLocation(currentLat, currentLng)
+            updateLocationStatus(true)
         },
-        (err) => console.log('GPS error:', err),
+        (err) => {
+            console.log('GPS error:', err)
+            if (err.code === 1 || err.code === 2 || err.code === 3) {
+                setLocationInactive()
+            }
+        },
         { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
     )
+}
+
+async function setLocationInactive() {
+    updateLocationStatus(false)
+    currentLat = null
+    currentLng = null
+
+    await supabaseClient
+        .from('live_locations')
+        .update({ is_active: false })
+        .eq('user_id', currentUser.id)
+
+    if (userMarker) {
+        map.removeLayer(userMarker)
+        userMarker = null
+    }
 }
 
 async function saveLocation(lat, lng) {
