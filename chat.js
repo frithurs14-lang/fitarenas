@@ -165,8 +165,15 @@ function subscribeToIncomingMessages() {
                 const user = allUsers.find(u => u.id === msg.sender_id)
 
                 showNotification(`💬 ${name}`, msg.message, () => {
-                    switchTab('inbox'); if (user) openChat(user)
+                    switchTab('inbox')
+                    if (user) openChat(user)
                 })
+
+                // ✅ user list এ নতুন user থাকলে add করো
+                if (!user) {
+                    await loadUsers()
+                    return
+                }
 
                 const item = document.getElementById('user-item-' + msg.sender_id)
                 if (item && !item.classList.contains('has-unread')) {
@@ -297,15 +304,27 @@ async function openChat(user) {
     if (window.innerWidth <= 768)
         document.getElementById('chat-window').classList.add('mobile-open')
 
-    if (messageChannel) supabaseClient.removeChannel(messageChannel)
+    // ✅ আগের channel সরাও
+    if (messageChannel) {
+        await supabaseClient.removeChannel(messageChannel)
+        messageChannel = null
+    }
 
     renderedMessageIds.clear()
+
+    // ✅ আগে messages load করো, তারপর subscribe করো
     await loadMessages()
     subscribeToMessages()
 
-    await supabaseClient.from('chat_messages').update({ is_read: true })
-        .eq('sender_id', selectedUserId).eq('receiver_id', currentUser.id).eq('is_read', false)
+    // ✅ সব unread message read করো
+    await supabaseClient
+        .from('chat_messages')
+        .update({ is_read: true })
+        .eq('sender_id', selectedUserId)
+        .eq('receiver_id', currentUser.id)
+        .eq('is_read', false)
 
+    // ✅ UI থেকে unread সরাও
     const item = document.getElementById('user-item-' + user.id)
     if (item) {
         item.classList.remove('has-unread')
@@ -315,7 +334,6 @@ async function openChat(user) {
         if (preview) preview.textContent = user.bio || 'Start chatting'
     }
 }
-
 async function loadMessages() {
     const { data, error } = await supabaseClient
         .from('chat_messages').select('*')
@@ -379,10 +397,17 @@ function subscribeToMessages() {
         .channel('messages_' + [currentUser.id, selectedUserId].sort().join('_'))
         .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `receiver_id=eq.${currentUser.id}` },
-            (payload) => {
+            async (payload) => {
                 const msg = payload.new
-                if (msg.sender_id !== selectedUserId) return // ✅ শুধু relevant message
+                if (msg.sender_id !== selectedUserId) return
+
                 renderMessage(msg)
+
+                // ✅ নতুন message সাথে সাথে read mark করো
+                await supabaseClient
+                    .from('chat_messages')
+                    .update({ is_read: true })
+                    .eq('id', msg.id)
             }
         ).subscribe()
 }
@@ -394,7 +419,18 @@ function scrollToBottom() {
 }
 function backToList() {
     document.getElementById('chat-window').classList.remove('mobile-open')
+    document.getElementById('chat-area').classList.add('hidden')
+    document.getElementById('no-chat').classList.remove('hidden')
     selectedUserId = null
+
+    // ✅ active highlight সরাও
+    document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'))
+
+    // ✅ channel সরাও
+    if (messageChannel) {
+        supabaseClient.removeChannel(messageChannel)
+        messageChannel = null
+    }
 }
 async function handleLogout() {
     if (messageChannel) supabaseClient.removeChannel(messageChannel)
