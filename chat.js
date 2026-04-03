@@ -164,12 +164,17 @@ function subscribeToPublic() {
                     const name = profile?.full_name || 'Someone'
                     showNotification('🌍 Public Chat', `${name}: ${msg.message}`, () => {
                         window.focus()
-                        switchTab('public') // ✅ public tab এ নিয়ে যাবে
+                        switchTab('public')
+                        setTimeout(() => {
+                            const container = document.getElementById('public-messages')
+                            container.scrollTop = container.scrollHeight
+                        }, 100)
                     })
                 }
             }
         ).subscribe()
 }
+
 function subscribeToIncomingMessages() {
     supabaseClient.channel('incoming_' + currentUser.id)
         .on('postgres_changes',
@@ -180,22 +185,33 @@ function subscribeToIncomingMessages() {
                 if (msg.sender_id === selectedUserId) return
 
                 const { data: profile } = await supabaseClient
-                    .from('profiles').select('full_name').eq('id', msg.sender_id).single()
+                    .from('profiles')
+                    .select('id, full_name, avatar_color, bio')
+                    .eq('id', msg.sender_id)
+                    .single()
+
                 const name = profile?.full_name || 'Someone'
 
+                // ✅ allUsers এ না থাকলে add করো
                 let user = allUsers.find(u => u.id === msg.sender_id)
-
-                // ✅ নতুন user হলে আগে load করো
-                if (!user) {
-                    await loadUsers()
-                    user = allUsers.find(u => u.id === msg.sender_id)
+                if (!user && profile) {
+                    user = { ...profile, hasUnread: true }
+                    allUsers.unshift(user)
+                    renderUsers(allUsers)
                 }
 
                 showNotification(`💬 ${name}`, msg.message, async () => {
+                    window.focus()
                     switchTab('inbox')
-                    if (user) await openChat(user) // ✅ await যোগ করা হলো
+
+                    // ✅ user নিশ্চিত করে খোঁজো
+                    const targetUser = allUsers.find(u => u.id === msg.sender_id) || profile
+                    if (targetUser) {
+                        await openChat(targetUser)
+                    }
                 })
 
+                // ✅ unread dot যোগ করো
                 const item = document.getElementById('user-item-' + msg.sender_id)
                 if (item && !item.classList.contains('has-unread')) {
                     item.classList.add('has-unread')
