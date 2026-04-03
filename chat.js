@@ -58,8 +58,9 @@ function switchTab(tab) {
 async function loadPublicMessages() {
     const { data, error } = await supabaseClient
         .from('public_messages')
-        .select('*, profiles(full_name, avatar_color)')
-        .order('created_at', { ascending: true }).limit(50)
+        .select('*')
+        .order('created_at', { ascending: true })
+        .limit(50)
 
     const container = document.getElementById('public-messages')
     container.innerHTML = ''
@@ -69,7 +70,18 @@ async function loadPublicMessages() {
         container.innerHTML = '<div class="loading-msg">Be the first to send a message! 👋</div>'
         return
     }
-    data.forEach(msg => renderPublicMessage(msg))
+
+    // ✅ সব message এর profile আলাদা করে load করো
+    for (const msg of data) {
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('full_name, avatar_color')
+            .eq('id', msg.user_id)
+            .single()
+        msg.profiles = profile
+        renderPublicMessage(msg)
+    }
+
     container.scrollTop = container.scrollHeight
 }
 
