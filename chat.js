@@ -118,18 +118,30 @@ async function sendPublicMessage() {
     if (!message) return
 
     input.value = ''
-    input.disabled = true // ✅ FIX 3: Double send বন্ধ
+    input.disabled = true
 
     const { data, error } = await supabaseClient
         .from('public_messages')
         .insert({ user_id: currentUser.id, message })
-        .select('*, profiles(full_name, avatar_color)').single()
+        .select().single()
 
     input.disabled = false
     input.focus()
 
-    if (error) { console.log('Send error:', error); input.value = message; return }
-    if (data) renderPublicMessage(data)
+    if (error) {
+        console.log('Send error:', error)
+        input.value = message
+        return
+    }
+
+    if (data) {
+        // ✅ profile আলাদা করে attach করো
+        data.profiles = {
+            full_name: currentProfile?.full_name,
+            avatar_color: currentProfile?.avatar_color
+        }
+        renderPublicMessage(data)
+    }
 }
 
 function handlePublicKeyPress(e) { if (e.key === 'Enter') sendPublicMessage() }
@@ -140,16 +152,24 @@ function subscribeToPublic() {
             { event: 'INSERT', schema: 'public', table: 'public_messages' },
             async (payload) => {
                 const msg = payload.new
-                if (msg.user_id === currentUser.id) return // ✅ নিজের message skip
+                if (msg.user_id === currentUser.id) return
+
                 const { data: profile } = await supabaseClient
                     .from('profiles').select('full_name, avatar_color')
                     .eq('id', msg.user_id).single()
                 msg.profiles = profile
                 renderPublicMessage(msg)
+
+                if (currentTab !== 'public') {
+                    const name = profile?.full_name || 'Someone'
+                    showNotification('🌍 Public Chat', `${name}: ${msg.message}`, () => {
+                        window.focus()
+                        switchTab('public') // ✅ public tab এ নিয়ে যাবে
+                    })
+                }
             }
         ).subscribe()
 }
-
 function subscribeToIncomingMessages() {
     supabaseClient.channel('incoming_' + currentUser.id)
         .on('postgres_changes',
@@ -162,18 +182,19 @@ function subscribeToIncomingMessages() {
                 const { data: profile } = await supabaseClient
                     .from('profiles').select('full_name').eq('id', msg.sender_id).single()
                 const name = profile?.full_name || 'Someone'
-                const user = allUsers.find(u => u.id === msg.sender_id)
 
-                showNotification(`💬 ${name}`, msg.message, () => {
-                    switchTab('inbox')
-                    if (user) openChat(user)
-                })
+                let user = allUsers.find(u => u.id === msg.sender_id)
 
-                // ✅ user list এ নতুন user থাকলে add করো
+                // ✅ নতুন user হলে আগে load করো
                 if (!user) {
                     await loadUsers()
-                    return
+                    user = allUsers.find(u => u.id === msg.sender_id)
                 }
+
+                showNotification(`💬 ${name}`, msg.message, async () => {
+                    switchTab('inbox')
+                    if (user) await openChat(user) // ✅ await যোগ করা হলো
+                })
 
                 const item = document.getElementById('user-item-' + msg.sender_id)
                 if (item && !item.classList.contains('has-unread')) {
