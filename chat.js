@@ -88,27 +88,26 @@ function switchTab(tab) {
 
 // ✅ Fix: Public Message Loading Logic Improved
 async function loadPublicMessages() {
-    const container = document.getElementById('public-messages')
-    container.innerHTML = '<div class="loading-msg">লোড হচ্ছে...</div>'
-    renderedPublicIds.clear()
-
     const { data, error } = await supabaseClient
         .from('public_messages')
-        .select(`*, profiles(full_name, avatar_color)`) // Profile join optimization
-        .order('created_at', { ascending: true })
-        .limit(50)
+        .select('*, profiles(full_name, avatar_color)')
+        .order('created_at', { ascending: false })
+        .limit(100)
 
     if (error) {
-        container.innerHTML = '<div class="loading-msg">Error: ' + error.message + '</div>'
+        console.log('Public messages error:', error)
         return
     }
 
+    const container = document.getElementById('public-messages')
     container.innerHTML = ''
+
     if (!data || data.length === 0) {
-        container.innerHTML = '<div class="loading-msg">Be the first to send a message! 👋</div>'
-    } else {
-        data.forEach(msg => renderPublicMessage(msg))
+        container.innerHTML = '<div class="loading-msg">প্রথম message পাঠাও! 👋</div>'
+        return
     }
+
+    data.reverse().forEach(msg => renderPublicMessage(msg))
     container.scrollTop = container.scrollHeight
 }
 
