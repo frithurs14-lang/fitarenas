@@ -44,26 +44,28 @@ function formatTime(isoString) {
     const date = new Date(isoString)
     const now = new Date()
 
-    const isToday = date.toDateString() === now.toDateString()
+    const isToday = date.toLocaleDateString() === now.toLocaleDateString()
     const yesterday = new Date(now - 86400000)
-    const isYesterday = date.toDateString() === yesterday.toDateString()
+    const isYesterday = date.toLocaleDateString() === yesterday.toLocaleDateString()
 
-    let hours = date.getHours()
-    let minutes = date.getMinutes()
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12 || 12
-    minutes = minutes < 10 ? '0' + minutes : minutes
-    const timeStr = `${hours}:${minutes} ${ampm}`
+    const timeStr = date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Dhaka'
+    })
 
     if (isToday) return timeStr
     if (isYesterday) return `গতকাল ${timeStr}`
 
-    const day = date.getDate()
-    const month = date.getMonth() + 1
-    const year = date.getFullYear()
-    return `${day}/${month}/${year} ${timeStr}`
+    const dateStr = date.toLocaleDateString('en-BD', {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+        timeZone: 'Asia/Dhaka'
+    })
+    return `${dateStr} ${timeStr}`
 }
-
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession()
     if (!session) { window.location.href = 'index.html'; return }
