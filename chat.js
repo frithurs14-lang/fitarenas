@@ -41,12 +41,14 @@ customStyle.textContent = `
 document.head.appendChild(customStyle)
 
 function formatTime(isoString) {
-    const date = new Date(isoString)
+    const date = new Date(isoString + (isoString.endsWith('Z') ? '' : 'Z'))
     const now = new Date()
 
-    const isToday = date.toLocaleDateString() === now.toLocaleDateString()
-    const yesterday = new Date(now - 86400000)
-    const isYesterday = date.toLocaleDateString() === yesterday.toLocaleDateString()
+    const options = { timeZone: 'Asia/Dhaka' }
+    
+    const dateStr = date.toLocaleDateString('en-US', options)
+    const nowStr = now.toLocaleDateString('en-US', options)
+    const yesterdayStr = new Date(now - 86400000).toLocaleDateString('en-US', options)
 
     const timeStr = date.toLocaleTimeString('en-US', {
         hour: '2-digit',
@@ -55,16 +57,16 @@ function formatTime(isoString) {
         timeZone: 'Asia/Dhaka'
     })
 
-    if (isToday) return timeStr
-    if (isYesterday) return `গতকাল ${timeStr}`
+    if (dateStr === nowStr) return timeStr
+    if (dateStr === yesterdayStr) return `গতকাল ${timeStr}`
 
-    const dateStr = date.toLocaleDateString('en-BD', {
+    const fullDate = date.toLocaleDateString('en-BD', {
         day: 'numeric',
         month: 'numeric',
         year: 'numeric',
         timeZone: 'Asia/Dhaka'
     })
-    return `${dateStr} ${timeStr}`
+    return `${fullDate} ${timeStr}`
 }
 async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession()
