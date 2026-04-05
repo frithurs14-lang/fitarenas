@@ -70,8 +70,12 @@ async function checkAuth() {
     subscribeToIncomingMessages()
 
     const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
     const chatWith = params.get('with') || localStorage.getItem('chatWith')
-    if (chatWith) {
+
+    if (tab === 'public') {
+        switchTab('public')
+    } else if (chatWith) {
         localStorage.removeItem('chatWith')
         const user = allUsers.find(u => u.id === chatWith)
         if (user) { switchTab('inbox'); await openChat(user) }
