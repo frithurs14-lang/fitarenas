@@ -292,9 +292,36 @@ async function loadUsers() {
     const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, bio, avatar_color').neq('id', currentUser.id)
     const { data: unreadMsgs } = await supabaseClient.from('chat_messages').select('sender_id').eq('receiver_id', currentUser.id).eq('is_read', false)
     
+    // সবশেষ message এর time আনো
+    const { data: lastMsgs } = await supabaseClient
+        .from('chat_messages')
+        .select('sender_id, receiver_id, created_at')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
+
+    // প্রতিটা user এর সাথে সবশেষ message এর time
+    const lastMsgTime = {}
+    lastMsgs?.forEach(msg => {
+        const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id
+        if (!lastMsgTime[otherId]) lastMsgTime[otherId] = msg.created_at
+    })
+
     const unreadSenders = new Set(unreadMsgs?.map(m => m.sender_id) || [])
-    allUsers = profiles.map(u => ({ ...u, hasUnread: unreadSenders.has(u.id) }))
-    allUsers.sort((a, b) => b.hasUnread - a.hasUnread)
+    allUsers = profiles.map(u => ({ 
+        ...u, 
+        hasUnread: unreadSenders.has(u.id),
+        lastMsg: lastMsgTime[u.id] || null
+    }))
+
+    // unread আগে, তারপর recent chat আগে, তারপর বাকিরা
+    allUsers.sort((a, b) => {
+        if (b.hasUnread !== a.hasUnread) return b.hasUnread - a.hasUnread
+        if (a.lastMsg && b.lastMsg) return new Date(b.lastMsg) - new Date(a.lastMsg)
+        if (a.lastMsg) return -1
+        if (b.lastMsg) return 1
+        return 0
+    })
+
     renderUsers(allUsers)
 }
 
