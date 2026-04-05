@@ -157,10 +157,7 @@ function renderPublicMessage(msg) {
     const name = msg.profiles?.full_name || 'Unknown'
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     const color = msg.profiles?.avatar_color || '#1a8a5a'
-    const time = new Date(msg.created_at).toLocaleTimeString('bn-BD', {
-        hour: '2-digit',
-        minute: '2-digit'
-    })
+    const time = formatTime(msg.created_at)
 
     const empty = container.querySelector('.loading-msg')
     if (empty) empty.remove()
