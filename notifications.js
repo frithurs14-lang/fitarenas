@@ -8,65 +8,74 @@ async function initNotifications() {
         Notification.requestPermission()
     }
 
-    // ========== INBOX NOTIFICATION ==========
-    supabaseClient
-        .channel('global_notif_' + currentUser.id)
-        .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-            async (payload) => {
-                const msg = payload.new
-                if (msg.receiver_id !== currentUser.id) return
+    // Polling দিয়ে inbox notification
+    let lastCheck = new Date().toISOString()
 
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('full_name')
-                    .eq('id', msg.sender_id)
-                    .single()
+    setInterval(async () => {
+        const { data } = await supabaseClient
+            .from('chat_messages')
+            .select('*, profiles!sender_id(full_name)')
+            .eq('receiver_id', currentUser.id)
+            .eq('is_read', false)
+            .gt('created_at', lastCheck)
+            .order('created_at', { ascending: true })
 
-                const name = profile?.full_name || 'কেউ'
+        if (!data || data.length === 0) return
 
-                showGlobalNotif(`💬 ${name}`, msg.message, 'chat.html')
+        lastCheck = data[data.length - 1].created_at
 
-                if (Notification.permission === 'granted') {
-                    try {
-                        const n = new Notification(`💬 ${name}`, { body: msg.message })
-                        n.onclick = () => { window.location.href = 'chat.html'; n.close() }
-                        setTimeout(() => n.close(), 5000)
-                    } catch(e) {}
-                }
+        data.forEach(msg => {
+            const name = msg.profiles?.full_name || 'কেউ'
+            const currentPage = window.location.pathname
+
+            // chat page এ থাকলে notification দেখাবো না
+            if (currentPage.includes('chat.html')) return
+
+            showGlobalNotif(`💬 ${name}`, msg.message, `chat.html?with=${msg.sender_id}`)
+
+            if (Notification.permission === 'granted') {
+                try {
+                    const n = new Notification(`💬 ${name}`, { body: msg.message })
+                    n.onclick = () => {
+                        window.location.href = `chat.html?with=${msg.sender_id}`
+                        n.close()
+                    }
+                    setTimeout(() => n.close(), 5000)
+                } catch(e) {}
             }
-        )
-        .subscribe()
+        })
+    }, 4000)
 
-    // ========== PUBLIC CHAT NOTIFICATION ==========
-    supabaseClient
-        .channel('global_public_notif_' + currentUser.id)
-        .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'public_messages' },
-            async (payload) => {
-                const msg = payload.new
-                if (msg.user_id === currentUser.id) return
+    // Polling দিয়ে public chat notification
+    let lastPublicCheck = new Date().toISOString()
 
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('full_name')
-                    .eq('id', msg.user_id)
-                    .single()
+    setInterval(async () => {
+        const { data } = await supabaseClient
+            .from('public_messages')
+            .select('*, profiles(full_name)')
+            .neq('user_id', currentUser.id)
+            .gt('created_at', lastPublicCheck)
+            .order('created_at', { ascending: true })
 
-                const name = profile?.full_name || 'কেউ'
+        if (!data || data.length === 0) return
 
-                showGlobalNotif(`🌍 ${name}`, msg.message, 'chat.html')
+        lastPublicCheck = data[data.length - 1].created_at
 
-                if (Notification.permission === 'granted') {
-                    try {
-                        const n = new Notification(`🌍 ${name}`, { body: msg.message })
-                        n.onclick = () => { window.location.href = 'chat.html'; n.close() }
-                        setTimeout(() => n.close(), 5000)
-                    } catch(e) {}
-                }
-            }
-        )
-        .subscribe()
+        const currentPage = window.location.pathname
+        if (currentPage.includes('chat.html')) return
+
+        const last = data[data.length - 1]
+        const name = last.profiles?.full_name || 'কেউ'
+        showGlobalNotif(`🌍 ${name}`, last.message, 'chat.html')
+
+        if (Notification.permission === 'granted') {
+            try {
+                const n = new Notification(`🌍 ${name}`, { body: last.message })
+                n.onclick = () => { window.location.href = 'chat.html'; n.close() }
+                setTimeout(() => n.close(), 5000)
+            } catch(e) {}
+        }
+    }, 4000)
 }
 
 function showGlobalNotif(title, body, url) {
@@ -98,32 +107,32 @@ function showGlobalNotif(title, body, url) {
 }
 
 initNotifications()
+
 // Background location tracking
 function startBackgroundLocation() {
-  if (!navigator.geolocation || !navigator.serviceWorker.controller) return
+  if (!navigator.geolocation || !navigator.serviceWorker?.controller) return
 
   const SUPABASE_URL = 'https://rmvtyysvnhvfodozijrl.supabase.co'
   const SUPABASE_KEY = supabaseClient.supabaseKey || window._supabaseKey
 
   navigator.geolocation.watchPosition(
     async (pos) => {
-      const lat = pos.coords.latitude
-      const lng = pos.coords.longitude
+      const { data: { session } } = await supabaseClient.auth.getSession()
+      if (!session) return
 
-      // Status check
       const { data } = await supabaseClient
         .from('live_locations')
         .select('location_status')
-        .eq('user_id', (await supabaseClient.auth.getSession()).data.session?.user?.id)
+        .eq('user_id', session.user.id)
         .single()
 
       const status = data?.location_status || 'only_me'
 
       navigator.serviceWorker.controller.postMessage({
         type: 'UPDATE_LOCATION',
-        lat,
-        lng,
-        userId: (await supabaseClient.auth.getSession()).data.session?.user?.id,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        userId: session.user.id,
         status,
         supabaseUrl: SUPABASE_URL,
         supabaseKey: SUPABASE_KEY
@@ -134,10 +143,7 @@ function startBackgroundLocation() {
   )
 }
 
-// App load হলে background tracking শুরু
 window.addEventListener('load', async () => {
   const { data: { session } } = await supabaseClient.auth.getSession()
-  if (session) {
-    startBackgroundLocation()
-  }
+  if (session) startBackgroundLocation()
 })
