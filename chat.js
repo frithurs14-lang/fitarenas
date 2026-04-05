@@ -8,6 +8,37 @@ let currentTab = 'public'
 let renderedPublicIds = new Set()
 let renderedMessageIds = new Set()
 
+// ✅ Fix 1: Notification & Inbox UI Style Injector
+const customStyle = document.createElement('style')
+customStyle.textContent = `
+    /* Inbox User List Modern UI */
+    .user-item {
+        display: flex; align-items: center; padding: 12px 15px;
+        margin: 8px; border-radius: 12px; cursor: pointer;
+        transition: all 0.2s ease; background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1); position: relative;
+    }
+    .user-item:hover { background: rgba(26, 138, 90, 0.15); transform: translateY(-2px); }
+    .user-item.active { background: #1a8a5a; border-color: #1a8a5a; color: white; box-shadow: 0 4px 12px rgba(26,138,90,0.3); }
+    .user-item-avatar { 
+        width: 45px; height: 45px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 16px; margin-right: 12px; flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+    .user-item-info { flex-grow: 1; overflow: hidden; }
+    .user-item-name { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+    .user-item-preview { font-size: 12px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .unread-dot { 
+        width: 10px; height: 10px; background: #ff4757; border-radius: 50%; 
+        position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+        box-shadow: 0 0 8px #ff4757;
+    }
+    @keyframes slideIn { from { transform:translateY(-20px); opacity:0 } to { transform:translateY(0); opacity:1 } }
+    @keyframes fadeOut { from { opacity:1 } to { opacity:0 } }
+`
+document.head.appendChild(customStyle)
+
 function formatTime(isoString) {
     const date = new Date(isoString)
     let hours = date.getHours()
@@ -54,6 +85,7 @@ function switchTab(tab) {
     document.getElementById('chat-window').style.display = tab === 'public' ? 'none' : 'flex'
 }
 
+// ✅ Fix: Public Message Loading Logic Improved
 async function loadPublicMessages() {
     const container = document.getElementById('public-messages')
     container.innerHTML = '<div class="loading-msg">লোড হচ্ছে...</div>'
@@ -61,7 +93,7 @@ async function loadPublicMessages() {
 
     const { data, error } = await supabaseClient
         .from('public_messages')
-        .select('*')
+        .select(`*, profiles(full_name, avatar_color)`) // Profile join optimization
         .order('created_at', { ascending: true })
         .limit(50)
 
@@ -70,23 +102,12 @@ async function loadPublicMessages() {
         return
     }
 
+    container.innerHTML = ''
     if (!data || data.length === 0) {
         container.innerHTML = '<div class="loading-msg">Be the first to send a message! 👋</div>'
-        return
+    } else {
+        data.forEach(msg => renderPublicMessage(msg))
     }
-
-    container.innerHTML = ''
-
-    for (const msg of data) {
-        const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('full_name, avatar_color')
-            .eq('id', msg.user_id)
-            .single()
-        msg.profiles = profile
-        renderPublicMessage(msg)
-    }
-
     container.scrollTop = container.scrollHeight
 }
 
@@ -97,9 +118,10 @@ function renderPublicMessage(msg) {
 
     const container = document.getElementById('public-messages')
     const isOwn = msg.user_id === currentUser.id
-    const name = msg.profiles?.full_name || 'Unknown'
+    const profileData = msg.profiles || {}
+    const name = profileData.full_name || 'Unknown'
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    const color = msg.profiles?.avatar_color || '#1a8a5a'
+    const color = profileData.avatar_color || '#1a8a5a'
     const time = formatTime(msg.created_at)
 
     const empty = container.querySelector('.loading-msg')
@@ -107,9 +129,10 @@ function renderPublicMessage(msg) {
 
     const div = document.createElement('div')
     div.className = `public-msg ${isOwn ? 'own' : ''}`
+    div.id = `pub-msg-${msgId}`
     div.innerHTML = `
         <a href="profile.html?id=${msg.user_id}" class="public-msg-avatar"
-           style="background:${color};color:white;display:flex;align-items:center;justify-content:center;">
+           style="background:${color};text-decoration:none;color:white;display:flex;align-items:center;justify-content:center;">
            ${initials}
         </a>
         <div class="public-msg-content">
@@ -122,6 +145,7 @@ function renderPublicMessage(msg) {
     container.scrollTop = container.scrollHeight
 }
 
+// ✅ Fix: Public message save validation
 async function sendPublicMessage() {
     const input = document.getElementById('public-input')
     const message = input.value.trim()
@@ -130,92 +154,211 @@ async function sendPublicMessage() {
     input.value = ''
     input.disabled = true
 
+    // Direct insertion check
     const { data, error } = await supabaseClient
         .from('public_messages')
-        .insert({ user_id: currentUser.id, message })
-        .select().single()
+        .insert([{ user_id: currentUser.id, message: message }])
+        .select(`*, profiles(full_name, avatar_color)` )
+        .single()
 
     input.disabled = false
     input.focus()
 
     if (error) {
+        console.error('Save Error:', error)
+        alert('Message save failed. Please check internet.')
         input.value = message
         return
     }
 
-    if (data) {
-        data.profiles = {
-            full_name: currentProfile?.full_name,
-            avatar_color: currentProfile?.avatar_color
-        }
-        renderPublicMessage(data)
-    }
+    if (data) renderPublicMessage(data)
 }
 
 function handlePublicKeyPress(e) { if (e.key === 'Enter') sendPublicMessage() }
 
+function subscribeToPublic() {
+    publicChannel = supabaseClient.channel('public_messages_channel')
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'public_messages' },
+            async (payload) => {
+                const msg = payload.new
+                if (msg.user_id === currentUser.id) return
+
+                const { data: profile } = await supabaseClient
+                    .from('profiles').select('full_name, avatar_color')
+                    .eq('id', msg.user_id).single()
+                msg.profiles = profile
+                renderPublicMessage(msg)
+
+                if (currentTab !== 'public') {
+                    showNotification('🌍 Public Chat', `${profile?.full_name}: ${msg.message}`, () => {
+                        switchTab('public')
+                        // ✅ Fix: Popup scroll to specific message
+                        const target = document.getElementById(`pub-msg-${msg.id}`)
+                        if(target) target.scrollIntoView({ behavior: 'smooth' })
+                    })
+                }
+            }
+        ).subscribe()
+}
+
+// ✅ Fix: Popup interaction & Inbox Navigation
 function showNotification(title, body, onClick) {
+    if (Notification.permission === 'granted') {
+        const n = new Notification(title, { body })
+        n.onclick = () => { window.focus(); onClick(); n.close() }
+    }
+
     const existing = document.getElementById('in-app-notif')
     if (existing) existing.remove()
 
     const notif = document.createElement('div')
     notif.id = 'in-app-notif'
     notif.style.cssText = `
-        position:fixed;top:70px;right:16px;left:16px;max-width:400px;margin:0 auto;
-        background:#1a8a5a;color:white;padding:14px;border-radius:12px;
-        z-index:99999;cursor:pointer;
+        position:fixed; top:20px; right:20px; width:300px;
+        background:#1a8a5a; color:white; padding:15px; border-radius:12px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:10000; cursor:pointer;
+        animation: slideIn 0.3s ease;
     `
-
     notif.innerHTML = `
-        <div style="font-weight:700">${title}</div>
-        <div style="font-size:13px">${body}</div>
+        <div style="font-weight:bold; margin-bottom:5px;">${title}</div>
+        <div style="font-size:13px; opacity:0.9;">${body}</div>
     `
-
-    notif.onclick = () => {
-        onClick()
-        setTimeout(() => {
-            const c1 = document.getElementById('public-messages')
-            const c2 = document.getElementById('messages-container')
-            if (c1) c1.scrollTop = c1.scrollHeight
-            if (c2) c2.scrollTop = c2.scrollHeight
-        }, 200)
-        notif.remove()
-    }
-
+    notif.onclick = () => { onClick(); notif.remove() }
     document.body.appendChild(notif)
-    setTimeout(() => notif.remove(), 5000)
+    setTimeout(() => { if(notif) notif.remove() }, 5000)
+}
+
+function subscribeToIncomingMessages() {
+    supabaseClient.channel('incoming_' + currentUser.id)
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+            async (payload) => {
+                const msg = payload.new
+                if (msg.receiver_id !== currentUser.id || msg.sender_id === selectedUserId) return
+
+                const { data: profile } = await supabaseClient
+                    .from('profiles').select('id, full_name, avatar_color, bio').eq('id', msg.sender_id).single()
+
+                showNotification(`💬 ${profile?.full_name}`, msg.message, async () => {
+                    window.focus()
+                    switchTab('inbox')
+                    if (profile) await openChat(profile)
+                })
+                await loadUsers() // Refresh list UI
+            }
+        ).subscribe()
+}
+
+async function loadUsers() {
+    const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, bio, avatar_color').neq('id', currentUser.id)
+    const { data: unreadMsgs } = await supabaseClient.from('chat_messages').select('sender_id').eq('receiver_id', currentUser.id).eq('is_read', false)
+    
+    const unreadSenders = new Set(unreadMsgs?.map(m => m.sender_id) || [])
+    allUsers = profiles.map(u => ({ ...u, hasUnread: unreadSenders.has(u.id) }))
+    allUsers.sort((a, b) => b.hasUnread - a.hasUnread)
+    renderUsers(allUsers)
 }
 
 function renderUsers(users) {
     const list = document.getElementById('users-list')
-    list.innerHTML = ''
-
+    list.innerHTML = users.length ? '' : '<div class="loading-msg">No users found</div>'
     users.forEach(user => {
         const name = user.full_name || 'Unknown'
         const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-        const color = user.avatar_color || '#1a8a5a'
-
         const div = document.createElement('div')
-        div.style.cssText = `
-            display:flex;align-items:center;gap:12px;padding:10px;
-            border-radius:10px;margin-bottom:6px;cursor:pointer;
-        `
-
+        div.className = `user-item ${user.hasUnread ? 'has-unread' : ''} ${selectedUserId === user.id ? 'active' : ''}`
+        div.id = 'user-item-' + user.id
         div.innerHTML = `
-            <div style="width:40px;height:40px;border-radius:50%;background:${color};
-                display:flex;align-items:center;justify-content:center;color:white;">
-                ${initials}
+            <div class="user-item-avatar" style="background:${user.avatar_color || '#1a8a5a'}">${initials}</div>
+            <div class="user-item-info">
+                <div class="user-item-name">${name}</div>
+                <div class="user-item-preview">${user.hasUnread ? '📩 New message' : (user.bio || 'Start chatting')}</div>
             </div>
-            <div>
-                <div style="font-weight:600">${name}</div>
-                <div style="font-size:12px;color:gray;">${user.bio || ''}</div>
-            </div>
+            ${user.hasUnread ? '<div class="unread-dot"></div>' : ''}
         `
-
         div.onclick = () => openChat(user)
         list.appendChild(div)
     })
 }
 
-// बाकी code unchanged
+async function openChat(user) {
+    selectedUserId = user.id
+    switchTab('inbox')
+    renderUsers(allUsers) // UI update for active class
+
+    document.getElementById('chat-username').textContent = user.full_name
+    document.getElementById('no-chat').classList.add('hidden')
+    document.getElementById('chat-area').classList.remove('hidden')
+    
+    if (window.innerWidth <= 768) document.getElementById('chat-window').classList.add('mobile-open')
+
+    if (messageChannel) supabaseClient.removeChannel(messageChannel)
+    await loadMessages()
+    subscribeToMessages()
+
+    // Mark as read
+    await supabaseClient.from('chat_messages').update({ is_read: true }).eq('sender_id', user.id).eq('receiver_id', currentUser.id)
+    await loadUsers()
+}
+
+async function loadMessages() {
+    const { data } = await supabaseClient.from('chat_messages').select('*')
+        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${currentUser.id})`)
+        .order('created_at', { ascending: true })
+
+    const container = document.getElementById('messages-container')
+    container.innerHTML = ''
+    renderedMessageIds.clear()
+    if (data) data.forEach(msg => renderMessage(msg))
+    scrollToBottom()
+}
+
+function renderMessage(msg) {
+    const msgId = msg.id || (msg.created_at + msg.sender_id)
+    if (renderedMessageIds.has(msgId)) return
+    renderedMessageIds.add(msgId)
+
+    const container = document.getElementById('messages-container')
+    const isSent = msg.sender_id === currentUser.id
+    const div = document.createElement('div')
+    div.className = `message-bubble ${isSent ? 'sent' : 'received'}`
+    div.innerHTML = `${msg.message}<div class="message-time">${formatTime(msg.created_at)}</div>`
+    container.appendChild(div)
+    scrollToBottom()
+}
+
+async function sendMessage() {
+    const input = document.getElementById('message-input')
+    const message = input.value.trim()
+    if (!message || !selectedUserId) return
+    input.value = ''; input.disabled = true
+
+    const { data } = await supabaseClient.from('chat_messages')
+        .insert({ sender_id: currentUser.id, receiver_id: selectedUserId, message, is_read: false })
+        .select().single()
+
+    input.disabled = false; input.focus()
+    if (data) renderMessage(data)
+}
+
+function subscribeToMessages() {
+    messageChannel = supabaseClient.channel('chat_' + selectedUserId)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, 
+        payload => {
+            const msg = payload.new
+            if ((msg.sender_id === selectedUserId && msg.receiver_id === currentUser.id) || 
+                (msg.sender_id === currentUser.id && msg.receiver_id === selectedUserId)) {
+                renderMessage(msg)
+            }
+        }).subscribe()
+}
+
+function handleKeyPress(e) { if (e.key === 'Enter') sendMessage() }
+function scrollToBottom() { const c = document.getElementById('messages-container'); c.scrollTop = c.scrollHeight }
+function backToList() { 
+    document.getElementById('chat-window').classList.remove('mobile-open')
+    selectedUserId = null; renderUsers(allUsers) 
+}
+
 checkAuth()
