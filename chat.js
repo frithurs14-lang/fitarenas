@@ -8,7 +8,6 @@ let currentTab = 'public'
 let renderedPublicIds = new Set()
 let renderedMessageIds = new Set()
 
-// ✅ FIX 1: Time format — সব device এ কাজ করবে
 function formatTime(isoString) {
     const date = new Date(isoString)
     let hours = date.getHours()
@@ -66,16 +65,13 @@ async function loadPublicMessages() {
         .order('created_at', { ascending: true })
         .limit(50)
 
-    console.log('Public messages data:', data)
-    console.log('Public messages error:', error)
-
     if (error) {
         container.innerHTML = '<div class="loading-msg">Error: ' + error.message + '</div>'
         return
     }
 
     if (!data || data.length === 0) {
-        container.innerHTML = '<div class="loading-msg">Be the first to send a message! 👋</div>'
+        container.innerHTML = '<div class="loading-msg">প্রথম message পাঠাও! 👋</div>'
         return
     }
 
@@ -88,29 +84,13 @@ async function loadPublicMessages() {
             .eq('id', msg.user_id)
             .single()
         msg.profiles = profile
-        console.log('Rendering msg:', msg.message, 'profile:', profile)
         renderPublicMessage(msg)
     }
 
     container.scrollTop = container.scrollHeight
 }
 
-    // ✅ সব message এর profile আলাদা করে load করো
-    for (const msg of data) {
-        const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('full_name, avatar_color')
-            .eq('id', msg.user_id)
-            .single()
-        msg.profiles = profile
-        renderPublicMessage(msg)
-    }
-
-    container.scrollTop = container.scrollHeight
-
-
 function renderPublicMessage(msg) {
-    // ✅ FIX 2: Duplicate বন্ধ
     const msgId = msg.id || (msg.created_at + msg.user_id)
     if (renderedPublicIds.has(msgId)) return
     renderedPublicIds.add(msgId)
@@ -133,19 +113,13 @@ function renderPublicMessage(msg) {
            ${initials}
         </a>
         <div class="public-msg-content">
-            <div class="public-msg-name">${isOwn ? 'You' : name}</div>
+            <div class="public-msg-name">${isOwn ? 'আমি' : name}</div>
             <div class="public-msg-bubble">${msg.message}</div>
             <div class="public-msg-time">${time}</div>
         </div>
     `
     container.appendChild(div)
     container.scrollTop = container.scrollHeight
-
-    if (!isOwn && currentTab !== 'public') {
-        showNotification('🌍 Public Chat', `${name}: ${msg.message}`, () => {
-            window.focus(); switchTab('public')
-        })
-    }
 }
 
 async function sendPublicMessage() {
@@ -171,7 +145,6 @@ async function sendPublicMessage() {
     }
 
     if (data) {
-        // ✅ profile আলাদা করে attach করো
         data.profiles = {
             full_name: currentProfile?.full_name,
             avatar_color: currentProfile?.avatar_color
@@ -197,7 +170,7 @@ function subscribeToPublic() {
                 renderPublicMessage(msg)
 
                 if (currentTab !== 'public') {
-                    const name = profile?.full_name || 'Someone'
+                    const name = profile?.full_name || 'কেউ'
                     showNotification('🌍 Public Chat', `${name}: ${msg.message}`, () => {
                         window.focus()
                         switchTab('public')
@@ -226,9 +199,8 @@ function subscribeToIncomingMessages() {
                     .eq('id', msg.sender_id)
                     .single()
 
-                const name = profile?.full_name || 'Someone'
+                const name = profile?.full_name || 'কেউ'
 
-                // ✅ allUsers এ না থাকলে add করো
                 let user = allUsers.find(u => u.id === msg.sender_id)
                 if (!user && profile) {
                     user = { ...profile, hasUnread: true }
@@ -239,20 +211,15 @@ function subscribeToIncomingMessages() {
                 showNotification(`💬 ${name}`, msg.message, async () => {
                     window.focus()
                     switchTab('inbox')
-
-                    // ✅ user নিশ্চিত করে খোঁজো
                     const targetUser = allUsers.find(u => u.id === msg.sender_id) || profile
-                    if (targetUser) {
-                        await openChat(targetUser)
-                    }
+                    if (targetUser) await openChat(targetUser)
                 })
 
-                // ✅ unread dot যোগ করো
                 const item = document.getElementById('user-item-' + msg.sender_id)
                 if (item && !item.classList.contains('has-unread')) {
                     item.classList.add('has-unread')
                     const preview = item.querySelector('.user-item-preview')
-                    if (preview) preview.textContent = '💬 New message'
+                    if (preview) preview.textContent = '💬 নতুন message আছে'
                     if (!item.querySelector('.unread-dot')) {
                         const dot = document.createElement('div')
                         dot.className = 'unread-dot'
@@ -263,7 +230,6 @@ function subscribeToIncomingMessages() {
         ).subscribe()
 }
 
-// ✅ FIX 4: Popup animation CSS
 const notifStyle = document.createElement('style')
 notifStyle.textContent = `
 @keyframes slideIn { from { transform:translateY(-20px);opacity:0 } to { transform:translateY(0);opacity:1 } }
@@ -294,7 +260,7 @@ function showNotification(title, body, onClick) {
     notif.innerHTML = `
         <div style="font-weight:700;font-size:14px;margin-bottom:4px">${title}</div>
         <div style="font-size:13px;opacity:0.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${body}</div>
-        <div style="font-size:11px;opacity:0.7;margin-top:4px">👆 tap to view</div>
+        <div style="font-size:11px;opacity:0.7;margin-top:4px">👆 tap করো দেখতে</div>
     `
     notif.onclick = () => { onClick(); notif.remove() }
     document.body.appendChild(notif)
@@ -324,7 +290,8 @@ async function loadUsers() {
 function renderUsers(users) {
     const list = document.getElementById('users-list')
     if (!users || users.length === 0) {
-        list.innerHTML = '<div class="loading-msg">No users found</div>'; return
+        list.innerHTML = '<div class="loading-msg">কোনো user নেই</div>'
+        return
     }
     list.innerHTML = ''
     users.forEach(user => {
@@ -338,7 +305,7 @@ function renderUsers(users) {
             <div class="user-item-avatar" style="background:${color}">${initials}</div>
             <div class="user-item-info">
                 <div class="user-item-name">${name}</div>
-                <div class="user-item-preview">${user.hasUnread ? '💬 New message' : (user.bio || 'Start chatting')}</div>
+                <div class="user-item-preview">${user.hasUnread ? '💬 নতুন message আছে' : (user.bio || 'Chat শুরু করো')}</div>
             </div>
             ${user.hasUnread ? '<div class="unread-dot"></div>' : ''}
         `
@@ -377,19 +344,15 @@ async function openChat(user) {
     if (window.innerWidth <= 768)
         document.getElementById('chat-window').classList.add('mobile-open')
 
-    // ✅ আগের channel সরাও
     if (messageChannel) {
-        await supabaseClient.removeChannel(messageChannel)
+        supabaseClient.removeChannel(messageChannel)
         messageChannel = null
     }
 
     renderedMessageIds.clear()
-
-    // ✅ আগে messages load করো, তারপর subscribe করো
     await loadMessages()
     subscribeToMessages()
 
-    // ✅ সব unread message read করো
     await supabaseClient
         .from('chat_messages')
         .update({ is_read: true })
@@ -397,16 +360,16 @@ async function openChat(user) {
         .eq('receiver_id', currentUser.id)
         .eq('is_read', false)
 
-    // ✅ UI থেকে unread সরাও
     const item = document.getElementById('user-item-' + user.id)
     if (item) {
         item.classList.remove('has-unread')
         const dot = item.querySelector('.unread-dot')
         if (dot) dot.remove()
         const preview = item.querySelector('.user-item-preview')
-        if (preview) preview.textContent = user.bio || 'Start chatting'
+        if (preview) preview.textContent = user.bio || 'Chat শুরু করো'
     }
 }
+
 async function loadMessages() {
     const { data, error } = await supabaseClient
         .from('chat_messages').select('*')
@@ -418,14 +381,14 @@ async function loadMessages() {
     renderedMessageIds.clear()
 
     if (error || !data || data.length === 0) {
-        container.innerHTML = '<div class="loading-msg">Say hello! 👋</div>'; return
+        container.innerHTML = '<div class="loading-msg">প্রথম message পাঠাও! 👋</div>'
+        return
     }
     data.forEach(msg => renderMessage(msg))
     scrollToBottom()
 }
 
 function renderMessage(msg) {
-    // ✅ FIX: Duplicate বন্ধ
     const msgId = msg.id || (msg.created_at + msg.sender_id)
     if (renderedMessageIds.has(msgId)) return
     renderedMessageIds.add(msgId)
@@ -451,7 +414,7 @@ async function sendMessage() {
     if (!message || !selectedUserId) return
 
     input.value = ''
-    input.disabled = true // ✅ Double send বন্ধ
+    input.disabled = true
 
     const { data, error } = await supabaseClient
         .from('chat_messages')
@@ -469,14 +432,12 @@ function subscribeToMessages() {
     messageChannel = supabaseClient
         .channel('messages_' + [currentUser.id, selectedUserId].sort().join('_'))
         .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `receiver_id=eq.${currentUser.id}` },
+            { event: 'INSERT', schema: 'public', table: 'chat_messages',
+              filter: `receiver_id=eq.${currentUser.id}` },
             async (payload) => {
                 const msg = payload.new
                 if (msg.sender_id !== selectedUserId) return
-
                 renderMessage(msg)
-
-                // ✅ নতুন message সাথে সাথে read mark করো
                 await supabaseClient
                     .from('chat_messages')
                     .update({ is_read: true })
@@ -486,35 +447,37 @@ function subscribeToMessages() {
 }
 
 function handleKeyPress(e) { if (e.key === 'Enter') sendMessage() }
+
 function scrollToBottom() {
     const c = document.getElementById('messages-container')
     c.scrollTop = c.scrollHeight
 }
+
 function backToList() {
     document.getElementById('chat-window').classList.remove('mobile-open')
     document.getElementById('chat-area').classList.add('hidden')
     document.getElementById('no-chat').classList.remove('hidden')
     selectedUserId = null
-
-    // ✅ active highlight সরাও
     document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'))
-
-    // ✅ channel সরাও
     if (messageChannel) {
         supabaseClient.removeChannel(messageChannel)
         messageChannel = null
     }
 }
+
 async function handleLogout() {
     if (messageChannel) supabaseClient.removeChannel(messageChannel)
     if (publicChannel) supabaseClient.removeChannel(publicChannel)
     await supabaseClient.auth.signOut()
     window.location.href = 'index.html'
 }
+
 function toggleMenu() { document.querySelector('.nav-links').classList.toggle('open') }
+
 function scrollPublic(dir) {
     document.getElementById('public-messages').scrollBy({ top: dir === 'up' ? -200 : 200, behavior: 'smooth' })
 }
+
 function scrollInbox(dir) {
     document.getElementById('messages-container').scrollBy({ top: dir === 'up' ? -200 : 200, behavior: 'smooth' })
 }
