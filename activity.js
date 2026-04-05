@@ -110,7 +110,7 @@ function startGPS() {
             const { latitude, longitude, speed, accuracy } = position.coords
 
             // accuracy খারাপ হলে skip করো
-            if (accuracy > 20) return
+            if (accuracy > 50) return
 
             saveActivityLocation(latitude, longitude)
 
@@ -121,8 +121,8 @@ function startGPS() {
                 )
 
                 const minDist = selectedType === 'cycling' ? 0.010 :
-                                selectedType === 'running' ? 0.008 :
-                                selectedType === 'jogging' ? 0.006 : 0.010
+                selectedType === 'running' ? 0.005 :
+                selectedType === 'jogging' ? 0.004 : 0.005
 
                 if (dist > minDist) {
                     totalDistance += dist
