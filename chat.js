@@ -75,6 +75,10 @@ async function checkAuth() {
 
     if (tab === 'public') {
         switchTab('public')
+        setTimeout(() => {
+            const container = document.getElementById('public-messages')
+            container.scrollTop = container.scrollHeight
+        }, 500)
     } else if (chatWith) {
         localStorage.removeItem('chatWith')
         const user = allUsers.find(u => u.id === chatWith)
