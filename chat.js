@@ -115,7 +115,6 @@ async function loadPublicMessages() {
 function renderPublicMessage(msg) {
     const container = document.getElementById('public-messages')
     
-    // duplicate check
     if (msg.id && document.getElementById('pub-msg-' + msg.id)) return
     
     const isOwn = msg.user_id === currentUser.id
@@ -132,7 +131,7 @@ function renderPublicMessage(msg) {
 
     const div = document.createElement('div')
     div.className = `public-msg ${isOwn ? 'own' : ''}`
-    if (msg.id) div.id = 'pub-msg-' + msg.id
+    div.id = 'pub-msg-' + msg.id
     div.innerHTML = `
         <a href="profile.html?id=${msg.user_id}"
            class="public-msg-avatar"
@@ -188,31 +187,24 @@ async function sendPublicMessage() {
 function handlePublicKeyPress(e) { if (e.key === 'Enter') sendPublicMessage() }
 
 function subscribeToPublic() {
-    publicChannel = supabaseClient
-        .channel('public_messages_channel')
-        .on('broadcast', { event: 'new_message' }, (payload) => {
-            renderPublicMessage(payload.payload)
-        })
-        .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'public_messages' },
-            async (payload) => {
-                const msg = payload.new
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('full_name, avatar_color')
-                    .eq('id', msg.user_id)
-                    .single()
-                msg.profiles = profile
+    let lastMessageTime = new Date().toISOString()
 
-                // duplicate check
-                if (document.getElementById('pub-msg-' + msg.id)) return
+    setInterval(async () => {
+        const { data } = await supabaseClient
+            .from('public_messages')
+            .select('*, profiles(full_name, avatar_color)')
+            .gt('created_at', lastMessageTime)
+            .order('created_at', { ascending: true })
 
+        if (!data || data.length === 0) return
+
+        lastMessageTime = data[data.length - 1].created_at
+        data.forEach(msg => {
+            if (!document.getElementById('pub-msg-' + msg.id)) {
                 renderPublicMessage(msg)
             }
-        )
-        .subscribe((status) => {
-            console.log('Public channel status:', status)
         })
+    }, 3000)
 }
 
 // ✅ Fix: Popup interaction & Inbox Navigation
