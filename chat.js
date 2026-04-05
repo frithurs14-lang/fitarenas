@@ -113,37 +113,47 @@ async function loadPublicMessages() {
 }
 
 function renderPublicMessage(msg) {
-    const msgId = msg.id || (msg.created_at + msg.user_id)
-    if (renderedPublicIds.has(msgId)) return
-    renderedPublicIds.add(msgId)
-
     const container = document.getElementById('public-messages')
+    
+    // duplicate check
+    if (msg.id && document.getElementById('pub-msg-' + msg.id)) return
+    
     const isOwn = msg.user_id === currentUser.id
-    const profileData = msg.profiles || {}
-    const name = profileData.full_name || 'Unknown'
+    const name = msg.profiles?.full_name || 'Unknown'
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    const color = profileData.avatar_color || '#1a8a5a'
-    const time = formatTime(msg.created_at)
+    const color = msg.profiles?.avatar_color || '#1a8a5a'
+    const time = new Date(msg.created_at).toLocaleTimeString('bn-BD', {
+        hour: '2-digit',
+        minute: '2-digit'
+    })
 
     const empty = container.querySelector('.loading-msg')
     if (empty) empty.remove()
 
     const div = document.createElement('div')
     div.className = `public-msg ${isOwn ? 'own' : ''}`
-    div.id = `pub-msg-${msgId}`
+    if (msg.id) div.id = 'pub-msg-' + msg.id
     div.innerHTML = `
-        <a href="profile.html?id=${msg.user_id}" class="public-msg-avatar"
-           style="background:${color};text-decoration:none;color:white;display:flex;align-items:center;justify-content:center;">
+        <a href="profile.html?id=${msg.user_id}"
+           class="public-msg-avatar"
+           style="background:${color};text-decoration:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;">
            ${initials}
         </a>
         <div class="public-msg-content">
-            <div class="public-msg-name">${isOwn ? 'You' : name}</div>
+            <div class="public-msg-name">${isOwn ? 'আমি' : name}</div>
             <div class="public-msg-bubble">${msg.message}</div>
             <div class="public-msg-time">${time}</div>
         </div>
     `
     container.appendChild(div)
     container.scrollTop = container.scrollHeight
+
+    if (!isOwn && currentTab !== 'public') {
+        showNotification('🌍 Public Chat', `${name}: ${msg.message}`, () => {
+            window.focus()
+            switchTab('public')
+        })
+    }
 }
 
 // ✅ Fix: Public message save validation
@@ -178,25 +188,31 @@ async function sendPublicMessage() {
 function handlePublicKeyPress(e) { if (e.key === 'Enter') sendPublicMessage() }
 
 function subscribeToPublic() {
-    // Realtime এর বদলে polling
-    setInterval(async () => {
-        const { data } = await supabaseClient
-            .from('public_messages')
-            .select('*, profiles(full_name, avatar_color)')
-            .order('created_at', { ascending: true })
-            .limit(50)
+    publicChannel = supabaseClient
+        .channel('public_messages_channel')
+        .on('broadcast', { event: 'new_message' }, (payload) => {
+            renderPublicMessage(payload.payload)
+        })
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'public_messages' },
+            async (payload) => {
+                const msg = payload.new
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('full_name, avatar_color')
+                    .eq('id', msg.user_id)
+                    .single()
+                msg.profiles = profile
 
-        if (!data) return
+                // duplicate check
+                if (document.getElementById('pub-msg-' + msg.id)) return
 
-        const container = document.getElementById('public-messages')
-        const currentCount = container.querySelectorAll('.public-msg').length
-
-        if (data.length > currentCount) {
-            // নতুন message আছে, re-render করো
-            container.innerHTML = ''
-            data.forEach(msg => renderPublicMessage(msg))
-        }
-    }, 3000) // প্রতি ৩ সেকেন্ডে check
+                renderPublicMessage(msg)
+            }
+        )
+        .subscribe((status) => {
+            console.log('Public channel status:', status)
+        })
 }
 
 // ✅ Fix: Popup interaction & Inbox Navigation
