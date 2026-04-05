@@ -40,21 +40,32 @@ function selectType(type) {
 function startActivity() {
     if (!selectedType) return
 
-    document.getElementById('select-section').classList.add('hidden')
-    document.getElementById('tracking-section').classList.remove('hidden')
+    // GPS permission check
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            // Permission আছে — activity শুরু করো
+            document.getElementById('select-section').classList.add('hidden')
+            document.getElementById('tracking-section').classList.remove('hidden')
 
-    const config = typeConfig[selectedType]
-    document.getElementById('activity-icon').textContent = config.icon
-    document.getElementById('activity-label').textContent = config.label
+            const config = typeConfig[selectedType]
+            document.getElementById('activity-icon').textContent = config.icon
+            document.getElementById('activity-label').textContent = config.label
 
-    isTracking = true
-    startTime = new Date()
-    activityStarted = new Date()
-    totalDistance = 0
-    lastPosition = null
+            isTracking = true
+            startTime = new Date()
+            activityStarted = new Date()
+            totalDistance = 0
+            lastPosition = null
 
-    startTimer()
-    startGPS()
+            startTimer()
+            startGPS()
+        },
+        (err) => {
+            // Permission নেই
+            alert('❌ Location permission দাও! Activity track করতে GPS লাগবে।')
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
 }
 
 function startTimer() {
