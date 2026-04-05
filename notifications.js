@@ -77,12 +77,12 @@ async function initNotifications() {
             .single()
 
         const name = profile?.full_name || 'কেউ'
-        showGlobalNotif(`🌍 ${name}`, last.message, 'chat.html')
+        showGlobalNotif(`🌍 ${name}`, last.message, 'chat.html?tab=public')
 
         if (Notification.permission === 'granted') {
             try {
                 const n = new Notification(`🌍 ${name}`, { body: last.message })
-                n.onclick = () => { window.location.href = 'chat.html'; n.close() }
+                n.onclick = () => { window.location.href = 'chat.html?tab=public'; n.close() }
                 setTimeout(() => n.close(), 5000)
             } catch(e) {}
         }
