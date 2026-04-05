@@ -308,7 +308,7 @@ function renderUsers(users) {
 async function openChat(user) {
     selectedUserId = user.id
     switchTab('inbox')
-    renderUsers(allUsers) // UI update for active class
+    renderUsers(allUsers)
 
     document.getElementById('chat-username').textContent = user.full_name
     document.getElementById('no-chat').classList.add('hidden')
@@ -322,6 +322,17 @@ async function openChat(user) {
 
     // Mark as read
     await supabaseClient.from('chat_messages').update({ is_read: true }).eq('sender_id', user.id).eq('receiver_id', currentUser.id)
+    
+    // UI থেকে unread dot সরাও
+    const item = document.getElementById('user-item-' + user.id)
+    if (item) {
+        item.classList.remove('has-unread')
+        const dot = item.querySelector('.unread-dot')
+        if (dot) dot.remove()
+        const preview = item.querySelector('.user-item-preview')
+        if (preview) preview.textContent = user.bio || 'Chat শুরু করো'
+    }
+    
     await loadUsers()
 }
 
