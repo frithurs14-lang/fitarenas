@@ -317,7 +317,24 @@ async function openChat(user) {
     selectedUserId = user.id
     switchTab('inbox')
 
-    document.getElementById('chat-username').textContent = user.full_name
+    // Avatar set করো
+    const name = user.full_name || 'Unknown'
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const avatar = document.getElementById('chat-avatar')
+    avatar.textContent = initials
+    avatar.style.background = user.avatar_color || '#1a8a5a'
+    avatar.style.cursor = 'pointer'
+    avatar.onclick = () => window.location.href = 'profile.html?id=' + user.id
+
+    // Username click করলে profile এ যাবে
+    const username = document.getElementById('chat-username')
+    username.textContent = name
+    username.style.cursor = 'pointer'
+    username.onclick = () => window.location.href = 'profile.html?id=' + user.id
+
+    // Profile button
+    document.getElementById('view-profile-btn').href = 'profile.html?id=' + user.id
+
     document.getElementById('no-chat').classList.add('hidden')
     document.getElementById('chat-area').classList.remove('hidden')
     
@@ -327,10 +344,10 @@ async function openChat(user) {
     await loadMessages()
     subscribeToMessages()
 
-    // Mark as read database এ
+    // Mark as read
     await supabaseClient.from('chat_messages').update({ is_read: true }).eq('sender_id', user.id).eq('receiver_id', currentUser.id)
     
-    // allUsers array update করো
+    // allUsers array update
     const idx = allUsers.findIndex(u => u.id === user.id)
     if (idx !== -1) allUsers[idx].hasUnread = false
 
