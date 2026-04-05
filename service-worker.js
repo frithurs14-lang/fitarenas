@@ -1,6 +1,6 @@
-const CACHE_NAME = 'app-cache-v5';
+const CACHE_NAME = 'app-cache-v6';
 const urlsToCache = [
-  '/',
+  '/fitarenas/',
   '/fitarenas/index.html',
   '/fitarenas/home.html',
   '/fitarenas/map.html',
@@ -17,7 +17,8 @@ const urlsToCache = [
   '/fitarenas/activity.js',
   '/fitarenas/leaderboard.js',
   '/fitarenas/profile.js',
-  '/fitarenas/notifications.js'
+  '/fitarenas/notifications.js',
+  '/fitarenas/service-worker.js'
 ];
 
 // Install
