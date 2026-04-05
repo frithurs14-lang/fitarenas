@@ -1,3 +1,4 @@
+
 let currentUser = null
 let currentProfile = null
 let selectedUserId = null
@@ -177,29 +178,25 @@ async function sendPublicMessage() {
 function handlePublicKeyPress(e) { if (e.key === 'Enter') sendPublicMessage() }
 
 function subscribeToPublic() {
-    publicChannel = supabaseClient.channel('public_messages_channel')
-        .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'public_messages' },
-            async (payload) => {
-                const msg = payload.new
-                if (msg.user_id === currentUser.id) return
+    // Realtime এর বদলে polling
+    setInterval(async () => {
+        const { data } = await supabaseClient
+            .from('public_messages')
+            .select('*, profiles(full_name, avatar_color)')
+            .order('created_at', { ascending: true })
+            .limit(50)
 
-                const { data: profile } = await supabaseClient
-                    .from('profiles').select('full_name, avatar_color')
-                    .eq('id', msg.user_id).single()
-                msg.profiles = profile
-                renderPublicMessage(msg)
+        if (!data) return
 
-                if (currentTab !== 'public') {
-                    showNotification('🌍 Public Chat', `${profile?.full_name}: ${msg.message}`, () => {
-                        switchTab('public')
-                        // ✅ Fix: Popup scroll to specific message
-                        const target = document.getElementById(`pub-msg-${msg.id}`)
-                        if(target) target.scrollIntoView({ behavior: 'smooth' })
-                    })
-                }
-            }
-        ).subscribe()
+        const container = document.getElementById('public-messages')
+        const currentCount = container.querySelectorAll('.public-msg').length
+
+        if (data.length > currentCount) {
+            // নতুন message আছে, re-render করো
+            container.innerHTML = ''
+            data.forEach(msg => renderPublicMessage(msg))
+        }
+    }, 3000) // প্রতি ৩ সেকেন্ডে check
 }
 
 // ✅ Fix: Popup interaction & Inbox Navigation
