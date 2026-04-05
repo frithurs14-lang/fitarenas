@@ -107,7 +107,7 @@ async function loadPublicMessages() {
     }
 
     container.scrollTop = container.scrollHeight
-}
+
 
 function renderPublicMessage(msg) {
     // ✅ FIX 2: Duplicate বন্ধ
