@@ -305,6 +305,14 @@ function renderUsers(users) {
     })
 }
 
+function searchUsers() {
+    const query = document.getElementById('search-input').value.toLowerCase()
+    const filtered = allUsers.filter(u =>
+        (u.full_name || '').toLowerCase().includes(query)
+    )
+    renderUsers(filtered)
+}
+
 async function openChat(user) {
     selectedUserId = user.id
     switchTab('inbox')
