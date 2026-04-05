@@ -51,22 +51,29 @@ async function initNotifications() {
 
     setInterval(async () => {
         const { data } = await supabaseClient
-            .from('public_messages')
-            .select('*, profiles(full_name)')
-            .neq('user_id', currentUser.id)
-            .gt('created_at', lastPublicCheck)
-            .order('created_at', { ascending: true })
+    .from('public_messages')
+    .select('user_id, message, created_at')
+    .neq('user_id', currentUser.id)
+    .gt('created_at', lastPublicCheck)
+    .order('created_at', { ascending: true })
 
-        if (!data || data.length === 0) return
+if (!data || data.length === 0) return
 
-        lastPublicCheck = data[data.length - 1].created_at
+lastPublicCheck = data[data.length - 1].created_at
 
-        const currentPage = window.location.pathname
-        if (currentPage.includes('chat.html')) return
+const currentPage = window.location.pathname
+if (currentPage.includes('chat.html')) return
 
-        const last = data[data.length - 1]
-        const name = last.profiles?.full_name || 'কেউ'
-        showGlobalNotif(`🌍 ${name}`, last.message, 'chat.html')
+const last = data[data.length - 1]
+
+const { data: profile } = await supabaseClient
+    .from('profiles')
+    .select('full_name')
+    .eq('id', last.user_id)
+    .single()
+
+const name = profile?.full_name || 'কেউ'
+showGlobalNotif(`🌍 ${name}`, last.message, 'chat.html')
 
         if (Notification.permission === 'granted') {
             try {
