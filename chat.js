@@ -308,7 +308,6 @@ function renderUsers(users) {
 async function openChat(user) {
     selectedUserId = user.id
     switchTab('inbox')
-    renderUsers(allUsers)
 
     document.getElementById('chat-username').textContent = user.full_name
     document.getElementById('no-chat').classList.add('hidden')
@@ -320,9 +319,13 @@ async function openChat(user) {
     await loadMessages()
     subscribeToMessages()
 
-    // Mark as read
+    // Mark as read database এ
     await supabaseClient.from('chat_messages').update({ is_read: true }).eq('sender_id', user.id).eq('receiver_id', currentUser.id)
     
+    // allUsers array update করো
+    const idx = allUsers.findIndex(u => u.id === user.id)
+    if (idx !== -1) allUsers[idx].hasUnread = false
+
     // UI থেকে unread dot সরাও
     const item = document.getElementById('user-item-' + user.id)
     if (item) {
@@ -332,10 +335,7 @@ async function openChat(user) {
         const preview = item.querySelector('.user-item-preview')
         if (preview) preview.textContent = user.bio || 'Chat শুরু করো'
     }
-    
-    await loadUsers()
 }
-
 async function loadMessages() {
     const { data } = await supabaseClient.from('chat_messages').select('*')
         .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${currentUser.id})`)
