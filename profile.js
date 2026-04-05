@@ -113,11 +113,18 @@ async function loadProfile() {
             const emoji = typeEmoji[log.activity_type] || '🏃'
 
             const startDate = new Date(log.started_at || log.created_at)
-            const date = startDate.toLocaleDateString('bn-BD')
-            const time = startDate.toLocaleTimeString('bn-BD', {
-                hour: '2-digit',
-                minute: '2-digit'
-            })
+const date = startDate.toLocaleDateString('en-BD', { 
+    day: 'numeric', 
+    month: 'numeric', 
+    year: 'numeric',
+    timeZone: 'Asia/Dhaka'
+})
+const time = startDate.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Dhaka'
+})
 
             const distance = parseFloat(log.distance_km || 0).toFixed(2)
 
