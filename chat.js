@@ -75,10 +75,20 @@ async function checkAuth() {
 
     if (tab === 'public') {
         switchTab('public')
+        const msgid = params.get('msgid')
         setTimeout(() => {
-            const container = document.getElementById('public-messages')
-            container.scrollTop = container.scrollHeight
-        }, 500)
+            if (msgid) {
+                const el = document.getElementById('pub-msg-' + msgid)
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    el.style.background = '#2ecc71'
+                    setTimeout(() => el.style.background = '', 2000)
+                }
+            } else {
+                const container = document.getElementById('public-messages')
+                container.scrollTop = container.scrollHeight
+            }
+        }, 1500)
     } else if (chatWith) {
         localStorage.removeItem('chatWith')
         const user = allUsers.find(u => u.id === chatWith)
