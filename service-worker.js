@@ -8,16 +8,16 @@ const urlsToCache = [
   '/fitarenas/activity.html',
   '/fitarenas/leaderboard.html',
   '/fitarenas/profile.html',
-  '/fitarenas/css/style.css',
-  '/fitarenas/js/supabase.js',
-  '/fitarenas/js/auth.js',
-  '/fitarenas/js/home.js',
-  '/fitarenas/js/map.js',
-  '/fitarenas/js/chat.js',
-  '/fitarenas/js/activity.js',
-  '/fitarenas/js/leaderboard.js',
-  '/fitarenas/js/profile.js',
-  '/fitarenas/js/notifications.js'
+  '/fitarenas/style.css',
+  '/fitarenas/supabase.js',
+  '/fitarenas/auth.js',
+  '/fitarenas/home.js',
+  '/fitarenas/map.js',
+  '/fitarenas/chat.js',
+  '/fitarenas/activity.js',
+  '/fitarenas/leaderboard.js',
+  '/fitarenas/profile.js',
+  '/fitarenas/notifications.js'
 ];
 
 // Install
