@@ -69,7 +69,8 @@ async function checkAuth() {
     subscribeToPublic()
     subscribeToIncomingMessages()
 
-    const chatWith = localStorage.getItem('chatWith')
+    const params = new URLSearchParams(window.location.search)
+    const chatWith = params.get('with') || localStorage.getItem('chatWith')
     if (chatWith) {
         localStorage.removeItem('chatWith')
         const user = allUsers.find(u => u.id === chatWith)
@@ -366,7 +367,3 @@ function backToList() {
 }
 
 checkAuth()
-
-function toggleMenu() {
-    document.querySelector('.nav-links').classList.toggle('open')
-}
