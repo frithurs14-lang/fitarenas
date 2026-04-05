@@ -42,16 +42,14 @@ document.head.appendChild(customStyle)
 
 function formatTime(isoString) {
     const date = new Date(isoString)
-    const bdDate = new Date(date.getTime() + (6 * 60 * 60 * 1000))
     const now = new Date()
-    const bdNow = new Date(now.getTime() + (6 * 60 * 60 * 1000))
 
-    const isToday = bdDate.toDateString() === bdNow.toDateString()
-    const yesterday = new Date(bdNow - 86400000)
-    const isYesterday = bdDate.toDateString() === yesterday.toDateString()
+    const isToday = date.toDateString() === now.toDateString()
+    const yesterday = new Date(now - 86400000)
+    const isYesterday = date.toDateString() === yesterday.toDateString()
 
-    let hours = bdDate.getUTCHours()
-    let minutes = bdDate.getUTCMinutes()
+    let hours = date.getHours()
+    let minutes = date.getMinutes()
     const ampm = hours >= 12 ? 'PM' : 'AM'
     hours = hours % 12 || 12
     minutes = minutes < 10 ? '0' + minutes : minutes
@@ -60,9 +58,9 @@ function formatTime(isoString) {
     if (isToday) return timeStr
     if (isYesterday) return `গতকাল ${timeStr}`
 
-    const day = bdDate.getUTCDate()
-    const month = bdDate.getUTCMonth() + 1
-    const year = bdDate.getUTCFullYear()
+    const day = date.getDate()
+    const month = date.getMonth() + 1
+    const year = date.getFullYear()
     return `${day}/${month}/${year} ${timeStr}`
 }
 
